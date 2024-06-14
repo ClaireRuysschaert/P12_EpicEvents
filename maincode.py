@@ -1,11 +1,10 @@
-from sqlalchemy import create_engine, select, func, MetaData, Table
+from sqlalchemy import create_engine, select
 
-from epicevents.models import StaffUser, EpicUser, EpicContract, EpicEvent, Department
+from epicevents.models import StaffUser, Department
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from local_settings import postgresql as settings
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import declarative_base
 
 
 def get_engine(user, passwd, host, port, db):
@@ -53,8 +52,15 @@ def add_department(session: Session):
 
 users = select(StaffUser).where(StaffUser.email == "jojo@jojo.fr")
 for user in session.scalars(users):
-    print(user.first_name, user.last_name, user.department_id, user.password, user.email)
-print(session.query(StaffUser).filter(StaffUser.email == "jojo@jojo.fr").first().first_name)
+    print(
+        user.first_name, user.last_name, user.department_id, user.password, user.email
+    )
+print(
+    session.query(StaffUser)
+    .filter(StaffUser.email == "jojo@jojo.fr")
+    .first()
+    .first_name
+)
 # for user in session.scalars(users):
 #     user: StaffUser
 
@@ -70,8 +76,6 @@ print(session.query(StaffUser).filter(StaffUser.email == "jojo@jojo.fr").first()
 # d = select(Department)
 # for dep in session.scalars(d):
 #     print(dep.id, dep.name, len(dep.employees))
-
-	
 
 
 # users = select(StaffUser)

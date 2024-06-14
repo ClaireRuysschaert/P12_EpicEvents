@@ -7,16 +7,14 @@ project_path = str(Path(__file__).parent.parent.parent)
 sys.path.insert(0, project_path)
 
 
-from epicevents.models import StaffUser
-from epicevents.controllers import (
-    is_staff_exists,
-    authenticate_user,
-    get_all_staff_users,
-    create_staff_users,
-)
-import click
-from utils import validate_email, validate_email_callback
-from tabulate import tabulate
+import click  # noqa
+from tabulate import tabulate  # noqa
+
+from epicevents.controllers import (authenticate_user,  # noqa
+                                    create_staff_users, get_all_staff_users,
+                                    is_staff_exists)
+from epicevents.models import StaffUser  # noqa
+from utils import validate_email, validate_email_callback  # noqa
 
 
 def get_user_staff_by_asking_id(action: str) -> StaffUser:
@@ -50,7 +48,13 @@ def display_all_staff_users_table():
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
     for user in users:
         data.append(
-            [user.staff_id, user.first_name, user.last_name, user.email, user.department_id]
+            [
+                user.staff_id,
+                user.first_name,
+                user.last_name,
+                user.email,
+                user.department_id,
+            ]
         )
     table = tabulate(data, headers=headers, tablefmt="pretty")
     click.echo("\n")
@@ -116,7 +120,7 @@ def display_update_staff_user_menu(staff: StaffUser):
     click.echo("3. Email")
     click.echo("4. Department ID")
     click.echo("5. Cancel update\n")
-    
+
     to_update = click.prompt("Enter your choice", type=int)
     if to_update == 1:
         first_name = click.prompt("Enter the new first name").capitalize()
@@ -128,9 +132,7 @@ def display_update_staff_user_menu(staff: StaffUser):
         email = click.prompt("Enter the new email")
         StaffUser.update(staff.staff_id, email=email)
     elif to_update == 4:
-        department_id = click.prompt(
-            "Enter the new department id", type=int
-        )
+        department_id = click.prompt("Enter the new department id", type=int)
         StaffUser.update(staff.staff_id, department_id=department_id)
     elif to_update == 5:
         click.echo("Update canceled")
@@ -187,7 +189,7 @@ def staff_user_menu():
 
     elif choice == 5:
         main_menu()
-    
+
     # Exit
     elif choice == 6:
         sys.exit(0)
@@ -212,7 +214,7 @@ def main_menu():
 
         choice = click.prompt("Enter your choice\n", type=int)
 
-        if choice == 1:  
+        if choice == 1:
             staff_user_menu()
 
         elif choice == 2:
@@ -220,7 +222,6 @@ def main_menu():
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu()
 
 
 if __name__ == "__main__":

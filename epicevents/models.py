@@ -1,20 +1,11 @@
 from datetime import datetime
 
-from sqlalchemy import (
-    ForeignKey,
-    String,
-    Integer,
-    Column,
-    DateTime,
-    Enum,
-    Numeric,
-    Boolean,
-    select,
-)
-from sqlalchemy.orm import DeclarativeBase, Session, relationship
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from functools import wraps
+from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Integer, Numeric,
+                        String, select)
+from sqlalchemy.orm import DeclarativeBase, Session, relationship
+
 from utils import get_session
 
 
@@ -49,7 +40,7 @@ class StaffUser(Base):
     @staticmethod
     def get_user_by_email(session: Session, email: str) -> "StaffUser":
         return session.query(StaffUser).filter(StaffUser.email == email).first()
-    
+
     def verify_password(self, session, email, password: str) -> bool:
         staff = self.get_user_by_email(session, email)
         stored_password = staff.password
@@ -69,7 +60,7 @@ class StaffUser(Base):
     def get_all_staffusers(session: Session) -> list["StaffUser"]:
         all_users = select(StaffUser).order_by(StaffUser.staff_id)
         return session.scalars(all_users)
-    
+
     def update(staff_id: int, **kwargs) -> None:
         """
         Update the attributes of a staff user with the given staff_id from the database.
@@ -102,7 +93,7 @@ class StaffUser(Base):
             session.rollback()
             print(f"Error deleting staff user: {e}")
             return False
-    
+
 
 class EpicUser(Base):
     __tablename__ = "epic_user"
@@ -162,8 +153,7 @@ class EpicContract(Base):
     total_amount = Column("total_amount", Numeric)
     amount_due = Column("amount_due", Numeric)
     created_on = Column("created_on", DateTime, default=datetime.now())
-    status = Column(Enum("To sign", "Signed", "Cancelled", name="status_contract")
-    )
+    status = Column(Enum("To sign", "Signed", "Cancelled", name="status_contract"))
     commercial_contact = Column(
         "commercial_contact", Integer, ForeignKey("staff_user.staff_id")
     )
