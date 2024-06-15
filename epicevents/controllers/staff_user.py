@@ -3,7 +3,7 @@ from typing import Optional
 from constants import DEPARTMENTS_BY_ID
 from utils import get_session
 
-from .models import StaffUser
+from ..models import StaffUser
 
 
 def authenticate_user(email: str, password: str) -> Optional[StaffUser]:
@@ -50,18 +50,3 @@ def get_all_staff_users() -> list[StaffUser]:
     _, session = get_session()
     all_users = StaffUser.get_all_staffusers(session)
     return all_users
-
-
-# def has_permission(permission):
-#     def decorator(func):
-#         @wraps(func)
-#         def wrapper(*args, **kwargs):
-#             user: StaffUser = kwargs.get('user')
-#             departments_allowed = kwargs.get('departments_allowed')
-#             if user and user.department_id in departments_allowed:
-#                 return func(*args, **kwargs)
-#             else:
-#                 raise PermissionError(f"User does not have the
-#                 {permission} permission")
-#         return wrapper
-#     return decorator

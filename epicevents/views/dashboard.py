@@ -10,14 +10,17 @@ sys.path.insert(0, project_path)
 import click  # noqa
 from tabulate import tabulate  # noqa
 
-from epicevents.controllers import (authenticate_user,  # noqa
-                                    create_staff_users, get_all_staff_users,
-                                    is_staff_exists)
+from epicevents.controllers.permissions import has_permission  # noqa
+from epicevents.controllers.staff_user import authenticate_user  # noqa
+from epicevents.controllers.staff_user import create_staff_users  # noqa
+from epicevents.controllers.staff_user import get_all_staff_users  # noqa
+from epicevents.controllers.staff_user import is_staff_exists  # noqa; noqa
 from epicevents.models import StaffUser  # noqa
 from utils import validate_email, validate_email_callback  # noqa
 
 
-def get_user_staff_by_asking_id(action: str) -> StaffUser:
+@has_permission(departments_allowed=[1])
+def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
     click.echo(f"Please enter the staff id to {action}")
     staff_id = click.prompt("Enter the staff id", type=int)
     staff = is_staff_exists(staff_id)
@@ -42,7 +45,8 @@ def get_department_id_by_asking_login() -> int:
     return department_id
 
 
-def display_all_staff_users_table():
+@has_permission(departments_allowed=[1])
+def display_all_staff_users_table(department_id: int):
     users = get_all_staff_users()
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
@@ -62,27 +66,25 @@ def display_all_staff_users_table():
     click.echo("\n")
 
 
-@click.command
-@click.option(
-    "--email", prompt="Enter staff email to create", callback=validate_email_callback
-)
-@click.option("--password", prompt="Enter staff password to create", hide_input=True)
-@click.option("--first-name", prompt="Enter staff first name")
-@click.option("--last-name", prompt="Enter staff last name")
-@click.option(
-    "--department",
-    prompt="Enter staff department",
-    type=click.Choice(["management", "support", "commercial"], case_sensitive=False),
-)
-def display_created_staff_user(
-    first_name: str, last_name: str, email: str, password: str, department: str
-) -> None:
+@has_permission(departments_allowed=[1])
+def display_created_staff_user(department_id: int) -> None:
     """
     Create and display information about a staff user that just.
     Format the first name and last name to capitalize the first letter.
     """
-    first_name = first_name.capitalize()
-    last_name = last_name.capitalize()
+    email = click.prompt(
+        "Enter staff email to create", type=str, value_proc=validate_email
+    )
+    password = click.prompt("Enter staff password to create", type=str, hide_input=True)
+    first_name = click.prompt("Enter staff first name", type=str).capitalize()
+    last_name = click.prompt("Enter staff last name", type=str).capitalize()
+    department = click.prompt(
+        "Enter staff department",
+        type=click.Choice(
+            ["management", "support", "commercial"], case_sensitive=False
+        ),
+    )
+
     create_staff_users(first_name, last_name, email, password, department)
     click.echo(click.style("\nUser created successfully:", fg="green", bold=True))
     click.echo(click.style(f"First Name: {first_name}", fg="blue"))
@@ -91,7 +93,8 @@ def display_created_staff_user(
     click.echo(click.style(f"Department: {department}\n", fg="blue"))
 
 
-def display_staff_user(staff: StaffUser):
+@has_permission(departments_allowed=[1])
+def display_staff_user(staff: StaffUser, department_id: int):
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
     data.append(
@@ -110,7 +113,8 @@ def display_staff_user(staff: StaffUser):
     click.echo("\n")
 
 
-def display_update_staff_user_menu(staff: StaffUser):
+@has_permission(departments_allowed=[1])
+def display_update_staff_user_menu(staff: StaffUser, department_id: int):
     """
     Displays a menu for updating staff user information.
     """
@@ -132,8 +136,8 @@ def display_update_staff_user_menu(staff: StaffUser):
         email = click.prompt("Enter the new email")
         StaffUser.update(staff.staff_id, email=email)
     elif to_update == 4:
-        department_id = click.prompt("Enter the new department id", type=int)
-        StaffUser.update(staff.staff_id, department_id=department_id)
+        new_department_id = click.prompt("Enter the new department id", type=int)
+        StaffUser.update(staff.staff_id, department_id=new_department_id)
     elif to_update == 5:
         click.echo("Update canceled")
         return
@@ -141,9 +145,10 @@ def display_update_staff_user_menu(staff: StaffUser):
         click.secho("Invalid choice", fg="red")
 
 
-def display_staff_user_to_delete(staff: StaffUser):
+@has_permission(departments_allowed=[1])
+def display_staff_user_to_delete(staff: StaffUser, department_id: int):
     click.echo("\nStaff user to delete")
-    display_staff_user(staff)
+    display_staff_user(staff, department_id=department_id)
     confirm = click.prompt("Press enter to confirm deletion", type=str, default="")
     if confirm == "":
         StaffUser.delete(staff.staff_id)
@@ -152,7 +157,8 @@ def display_staff_user_to_delete(staff: StaffUser):
         click.echo("Deletion canceled")
 
 
-def staff_user_menu():
+@has_permission(departments_allowed=[1])
+def staff_user_menu(department_id: int):
     click.echo("Welcome to the staff users menu!\n")
     click.echo("1. See all staff users")
     click.echo("2. Create a staff users")
@@ -164,31 +170,32 @@ def staff_user_menu():
     choice = click.prompt("Enter your choice\n", type=int)
 
     if choice == 1:  # See all staff users
-        display_all_staff_users_table()
+        display_all_staff_users_table(department_id=department_id)
 
     elif choice == 2:  # Create a staff user
-        display_created_staff_user()
+        display_created_staff_user(department_id=department_id)
 
     # Update a staff user
     elif choice == 3:
-        staff = get_user_staff_by_asking_id("update")
+        staff = get_user_staff_by_asking_id("update", department_id=department_id)
         if staff:
-            display_staff_user(staff)
-            display_update_staff_user_menu(staff)
-            display_all_staff_users_table()
+            display_staff_user(staff, department_id=department_id)
+            print(department_id)
+            display_update_staff_user_menu(staff, department_id=department_id)
+            display_all_staff_users_table(department_id=department_id)
         else:
             click.secho("\nStaff not found", fg="red")
 
     # Delete a staff user
     elif choice == 4:
-        staff = get_user_staff_by_asking_id("delete")
+        staff = get_user_staff_by_asking_id("delete", department_id=department_id)
         if staff:
-            display_staff_user_to_delete(staff)
+            display_staff_user_to_delete(staff, department_id=department_id)
         else:
             click.secho("\nStaff not found", fg="red")
 
     elif choice == 5:
-        main_menu()
+        main_menu(department_id=department_id)
 
     # Exit
     elif choice == 6:
@@ -199,23 +206,25 @@ def staff_user_menu():
         main_menu()
 
 
-def main_menu():
-    click.echo("\nWelcome to the dashboard!\n")
+def main_menu(department_id: int = None):
 
     # Login
-    # department_id = get_department_id_by_asking_login()
-    # print(department_id)
+    if department_id is None:
+        click.echo("\nWelcome to the dashboard!\n")
+        department_id = get_department_id_by_asking_login()
+    else:
+        pass
 
     while True:
         # Menu
-        click.secho("What do you want to do?\n", bold=True)
-        click.echo("1. See the staff users menu")
+        click.secho("\nWhat do you want to do?\n", bold=True)
+        click.echo("1. See the staff menu")
         click.echo("2. Exit\n")
 
         choice = click.prompt("Enter your choice\n", type=int)
 
         if choice == 1:
-            staff_user_menu()
+            staff_user_menu(department_id=department_id)
 
         elif choice == 2:
             sys.exit(0)
