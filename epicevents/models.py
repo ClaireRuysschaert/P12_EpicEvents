@@ -37,10 +37,6 @@ class StaffUser(Base):
     def hash_password(self, password: str) -> None:
         self.password = password_hasher.hash(password)
 
-    @staticmethod
-    def get_user_by_email(session: Session, email: str) -> "StaffUser":
-        return session.query(StaffUser).filter(StaffUser.email == email).first()
-
     def verify_password(self, session, email, password: str) -> bool:
         staff = self.get_user_by_email(session, email)
         stored_password = staff.password
@@ -51,6 +47,10 @@ class StaffUser(Base):
 
     def check_password_needs_rehash(self) -> bool:
         return password_hasher.check_needs_rehash(self.password)
+
+    @staticmethod
+    def get_user_by_email(session: Session, email: str) -> "StaffUser":
+        return session.query(StaffUser).filter(StaffUser.email == email).first()
 
     @staticmethod
     def get_user_by_id(session: Session, staff_id: int) -> "StaffUser":
@@ -121,19 +121,26 @@ class EpicUser(Base):
                 user.assign_to,
             )
 
-    # @has_permission("create")
+    @staticmethod
+    def get_epic_user_by_id(user_id: int):
+        """
+        Get epic user by id.
+        """
+        _, session = get_session()
+        user = session.query(EpicUser).filter(EpicUser.user_id == user_id).first()
+        return user
+
     def assign_to_commercial_staff(self, session: Session, staff_id: int):
         """
         Assign the user to a commercial staff.
         """
         staff = session.query(StaffUser).filter(StaffUser.staff_id == staff_id).first()
-        if staff.department == "commercial":
+        if staff.department_id == 2:
             self.assign_to = staff_id
             session.commit()
         else:
             print("Staff is not commercial")
 
-    # @has_permission("read")
     def get_user_by_staff_id(self, session: Session, staff_id: int):
         """
         Get user by staff id.
@@ -159,19 +166,19 @@ class EpicContract(Base):
     )
 
     @staticmethod
-    # @has_permission("read")
-    def get_all_contracts(session: Session):
-        all_contracts = select(EpicContract)
-        for contract in session.scalars(all_contracts):
-            print(
-                contract.contract_id,
-                contract.client_id,
-                contract.total_amount,
-                contract.amount_due,
-                contract.status,
-            )
+    def get_all_contracts(session: Session) -> list["EpicContract"]:
+        all_contracts = select(EpicContract).order_by(EpicContract.contract_id)
+        return session.scalars(all_contracts)
 
-    # @has_permission("read")
+    @staticmethod
+    def get_contract_by_id(session: Session, contract_id: int) -> "EpicContract":
+        contract = (
+            session.query(EpicContract)
+            .filter(EpicContract.contract_id == contract_id)
+            .first()
+        )
+        return contract
+
     def get_contract_by_client_id(self, session: Session, client_id: int):
         """
         Get contract by client id.
@@ -183,13 +190,30 @@ class EpicContract(Base):
         )
         return contract
 
-    # @has_permission("read")
     def get_client_infos(self, session: Session, client_id: int):
         """
         Get client infos by client id.
         """
         client = session.query(EpicUser).filter(EpicUser.user_id == client_id).first()
         return client
+
+    def update(contract_id: int, **kwargs) -> None:
+        """
+        Update the attrs of a contract with the given contract_id from the database.
+        """
+        _, session = get_session()
+        try:
+            contract = EpicContract.get_contract_by_id(session, contract_id)
+            if not contract:
+                print(f"Contract with id {contract_id} does not exist")
+            for key, value in kwargs.items():
+                setattr(contract, key, value)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error updating contract user: {e}")
+        finally:
+            session.close()
 
 
 class EpicEvent(Base):

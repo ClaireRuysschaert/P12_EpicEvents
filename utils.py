@@ -1,5 +1,3 @@
-import click
-import re
 from local_settings import postgresql as settings
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine
@@ -35,15 +33,3 @@ def get_session():
 
 
 engine, session = get_session()
-
-
-def validate_email(email: str):
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        raise click.BadParameter('The email is not valid')
-    return email
-
-
-def validate_email_callback(ctx, self, email: str):
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        raise click.BadParameter('The email is not valid')
-    return email
