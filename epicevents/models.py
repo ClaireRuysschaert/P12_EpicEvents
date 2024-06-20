@@ -100,7 +100,7 @@ class EpicUser(Base):
     user_id = Column("user_id", Integer, primary_key=True)
     first_name = Column("first_name", String)
     last_name = Column("last_name", String)
-    email = Column("email", String)
+    email = Column("email", String, unique=True)
     phone = Column("phone", String)
     company = Column("company", String)
     created_on = Column("created_on", DateTime, default=datetime.now())
@@ -108,7 +108,6 @@ class EpicUser(Base):
     assign_to = Column("assign_to", Integer, ForeignKey("staff_user.staff_id"))
 
     @staticmethod
-    # @has_permission("read")
     def get_all_users(session: Session):
         all_users = select(EpicUser)
         for user in session.scalars(all_users):
@@ -122,11 +121,10 @@ class EpicUser(Base):
             )
 
     @staticmethod
-    def get_epic_user_by_id(user_id: int):
+    def get_epic_user_by_id(session:Session, user_id: int):
         """
         Get epic user by id.
         """
-        _, session = get_session()
         user = session.query(EpicUser).filter(EpicUser.user_id == user_id).first()
         return user
 
@@ -141,6 +139,17 @@ class EpicUser(Base):
         else:
             print("Staff is not commercial")
 
+    def assign_commercial_to_epic_user(client_id:int, commercial_contact:int):
+        """
+        Assigns a commercial contact to a client. 
+        If the client does not have an assigned commercial when creating the contract, 
+        the newly created commercial contact is used for assignment.
+        """
+        _, session = get_session()
+        user = EpicUser.get_epic_user_by_id(session, client_id)
+        user.assign_to = commercial_contact
+        session.commit()
+    
     def get_user_by_staff_id(self, session: Session, staff_id: int):
         """
         Get user by staff id.
@@ -179,13 +188,38 @@ class EpicContract(Base):
         )
         return contract
 
-    def get_contract_by_client_id(self, session: Session, client_id: int):
+    @staticmethod
+    def get_contract_by_client_id(session: Session, client_id: int):
         """
         Get contract by client id.
         """
         contract = (
             session.query(EpicContract)
-            .filter(EpicContract.client_info == client_id)
+            .filter(EpicContract.client_id == client_id)
+            .all()
+        )
+        return contract
+
+    @staticmethod
+    def get_contract_with_due_amount(session: Session):
+        """
+        Get contract with due amount.
+        """
+        contract = (
+            session.query(EpicContract)
+            .filter(EpicContract.amount_due > 0)
+            .all()
+        )
+        return contract
+    
+    @staticmethod
+    def get_contract_by_staff_id(session:Session, staff_id: int) -> list["EpicContract"]:
+        """
+        Get contract by staff id.
+        """
+        contract = (
+            session.query(EpicContract)
+            .filter(EpicContract.commercial_contact == staff_id)
             .all()
         )
         return contract
@@ -231,7 +265,6 @@ class EpicEvent(Base):
     attendees = Column("attendees", Integer)
     notes = Column("notes", String)
 
-    # @has_permission("read")
     def get_client_name(self, session: Session, contract_id: int):
         """
         Get client name by contract id.
@@ -250,7 +283,6 @@ class EpicEvent(Base):
                 return client.first_name, client.last_name
         return None
 
-    # @has_permission("read")
     def get_client_contact(self, session: Session, contract_id: int):
         """
         Get client contact by contract id.
@@ -269,7 +301,6 @@ class EpicEvent(Base):
                 return client.email, client.phone
         return None
 
-    # @has_permission("read")
     def get_support_contact_name(self, session: Session, event_id: int):
         """
         Get support contact name by event id.
@@ -286,7 +317,6 @@ class EpicEvent(Base):
                 return support_contact.first_name, support_contact.last_name
         return None
 
-    # @has_permission("read")
     def get_all_events(self, session: Session):
         """
         Get all events.
