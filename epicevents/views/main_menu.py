@@ -473,13 +473,13 @@ def display_update_contract_menu(contract: EpicContract, department_id: int):
         click.secho("Invalid choice", fg="red")
 
 
-@has_permission(DEPARTMENTS_BY_ID["commercial"])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
 def epic_contracts_filtered_menu(department_id: int, staff_id: int):
     """
     Display contracts based on filters.
     """
     while True:
-        click.secho("Which contract do you want to display ?\n", bold=True)
+        click.secho("\nWhich contract do you want to display ?\n", bold=True)
         click.echo("1. See my assigned contracts")
         click.echo("2. See all contracts of a client")
         click.echo("3. See contracts by amound due or signing status")
@@ -538,7 +538,7 @@ def epic_contracts_menu(department_id: int, staff_id: int):
     Users can not delete contracts.
     """
     while True:
-        click.secho("Main menu\n", bold=True)
+        click.secho("\nContracts menu\n", bold=True)
         click.echo("1. See all contracts")
         click.echo("2. See specific contracts by filters")
         click.echo("3. Create a contract")
@@ -597,7 +597,7 @@ def main_menu(department_id: int = None, staff_id: int = None):
 
     while True:
         # Menu
-        click.secho("Main menu\n", bold=True)
+        click.secho("\nMain menu\n", bold=True)
         click.secho("\nWhat do you want to do?\n", bold=True)
         click.echo("1. See the staff menu")
         click.echo("2. See the contracts menu")
