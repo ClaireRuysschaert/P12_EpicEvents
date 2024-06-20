@@ -17,7 +17,8 @@ def validate_client_id(client_id: int):
     """
     Verifies if the client exists in the database.
     """
-    client = EpicUser.get_epic_user_by_id(user_id=client_id)
+    _, session = get_session()
+    client = EpicUser.get_epic_user_by_id(session, user_id=client_id)
     if not client:
         raise click.BadParameter("The client_id is not valid")
     return client_id

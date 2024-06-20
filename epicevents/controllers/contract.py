@@ -1,3 +1,5 @@
+from typing import Union
+
 from utils import get_session
 
 from ..models import EpicContract
@@ -23,16 +25,43 @@ def create_contract(
     return new_contract
 
 
-def get_all_contracts() -> list[EpicContract]:
+def get_all_contracts() -> Union[list[EpicContract], None]:
     _, session = get_session()
-    all_contracts = EpicContract.get_all_contracts(session)
-    return all_contracts
+    contracts = EpicContract.get_all_contracts(session)
+    if contracts:
+        return contracts
+    return None
 
 
-def is_contract_exists(contract_id: int) -> EpicContract:
+def get_contract_by_staff_id(staff_id: int) -> Union[list[EpicContract], None]:
+    _, session = get_session()
+    contract: EpicContract = EpicContract.get_contract_by_staff_id(session, staff_id)
+    if contract:
+        return contract
+    return None
+
+
+def get_contract_by_user_id(user_id: int) -> Union[list[EpicContract], None]:
+    _, session = get_session()
+    contract: EpicContract = EpicContract.get_contract_by_client_id(
+        session, client_id=user_id
+    )
+    if contract:
+        return contract
+    return None
+
+
+def get_contract_with_due_amount() -> Union[list[EpicContract], None]:
+    _, session = get_session()
+    contract: EpicContract = EpicContract.get_contract_with_due_amount(session)
+    if contract:
+        return contract
+    return None
+
+
+def is_contract_exists(contract_id: int) -> Union[list[EpicContract], None]:
     _, session = get_session()
     contract: EpicContract = EpicContract.get_contract_by_id(session, contract_id)
     if contract:
         return contract
-    else:
-        return None
+    return None

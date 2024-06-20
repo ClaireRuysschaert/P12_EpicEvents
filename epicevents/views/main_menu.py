@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Union
 
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
@@ -10,28 +11,65 @@ sys.path.insert(0, project_path)
 import click  # noqa
 from tabulate import tabulate  # noqa
 
-from epicevents.controllers.contract import (create_contract,  # noqa
-                                             get_all_contracts,
-                                             is_contract_exists)
+from constants import DEPARTMENTS_BY_ID  # noqa
+from epicevents.controllers.client import (  # noqa
+    has_client_assign_to_commercial,
+    is_client_exists,
+)
+from epicevents.controllers.contract import create_contract  # noqa
+from epicevents.controllers.contract import (  # noqa
+    get_all_contracts,
+    get_contract_by_staff_id,
+    get_contract_by_user_id,
+    get_contract_with_due_amount,
+    is_contract_exists,
+)
 from epicevents.controllers.permissions import has_permission  # noqa
-from epicevents.controllers.staff_user import (authenticate_user,  # noqa
-                                               create_staff_users,
-                                               get_all_staff_users,
-                                               is_staff_exists)
-from epicevents.models import EpicContract, StaffUser  # noqa
-from validators import (validate_amount_due, validate_client_id,  # noqa
-                        validate_commercial_id, validate_email,
-                        validate_total_amount)
+from epicevents.controllers.staff_user import authenticate_user  # noqa
+from epicevents.controllers.staff_user import (  # noqa
+    create_staff_users,
+    get_all_staff_users,
+    is_staff_exists,
+)
+from epicevents.models import EpicContract, EpicUser, StaffUser  # noqa
+from epicevents.views.errors import (  # noqa
+    display_contract_update_error,
+    display_epic_user_not_found_error,
+    display_permission_error,
+)
+from validators import validate_client_id  # noqa
+from validators import (  # noqa
+    validate_amount_due,
+    validate_commercial_id,
+    validate_email,
+    validate_total_amount,
+)
 
 
-@has_permission(departments_allowed=[1])
-def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
+def get_user_staff_by_asking_id(action: str) -> StaffUser:
     click.echo(f"Please enter the staff id to {action}")
     staff_id = click.prompt("Enter the staff id", type=int)
     staff = is_staff_exists(staff_id)
     return staff
 
+def get_client_id_by_asking_id() -> Union[int, None]:
+    if DEPARTMENTS_BY_ID["commercial"]:
+        click.echo("Please enter the client id")
+        user_id = click.prompt("Enter the client id", type=int)
+        if is_client_exists(user_id):
+            return user_id
+        display_epic_user_not_found_error()
+        return None
+    return None
 
+
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["management"],
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
 def get_contract_by_asking_id(department_id: int) -> EpicContract:
     click.echo("Please enter the contract id to update")
     contract_id = click.prompt("Enter the contract id", type=int)
@@ -54,10 +92,11 @@ def get_department_id_by_asking_login() -> int:
         + " !"
     )
     department_id = user_login.department_id
-    return department_id
+    staff_id = user_login.staff_id
+    return department_id, staff_id
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_all_staff_users_table(department_id: int):
     users = get_all_staff_users()
     data = []
@@ -78,7 +117,7 @@ def display_all_staff_users_table(department_id: int):
     click.echo("\n")
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_created_staff_user(department_id: int) -> None:
     """
     Create and display information about a staff user.
@@ -105,7 +144,7 @@ def display_created_staff_user(department_id: int) -> None:
     click.echo(click.style(f"Department: {department}\n", fg="blue"))
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_staff_user(staff: StaffUser, department_id: int):
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
@@ -125,7 +164,7 @@ def display_staff_user(staff: StaffUser, department_id: int):
     click.echo("\n")
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_update_staff_user_menu(staff: StaffUser, department_id: int):
     """
     Displays a menu for updating staff user information.
@@ -157,7 +196,7 @@ def display_update_staff_user_menu(staff: StaffUser, department_id: int):
         click.secho("Invalid choice", fg="red")
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_staff_user_to_delete(staff: StaffUser, department_id: int):
     click.echo("\nStaff user to delete")
     display_staff_user(staff, department_id=department_id)
@@ -169,7 +208,7 @@ def display_staff_user_to_delete(staff: StaffUser, department_id: int):
         click.echo("Deletion canceled")
 
 
-@has_permission(departments_allowed=[1])
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def staff_user_menu(department_id: int):
     while True:
         click.secho("Staff user menu\n", bold=True)
@@ -180,7 +219,7 @@ def staff_user_menu(department_id: int):
         click.echo("5. Return to main menu")
         click.echo("6. Exit\n")
 
-        choice = click.prompt("Enter your choice\n", type=int)
+        choice = click.prompt("Enter your choice user\n", type=int)
 
         if choice == 1:  # See all staff users
             display_all_staff_users_table(department_id=department_id)
@@ -218,7 +257,64 @@ def staff_user_menu(department_id: int):
             main_menu()
 
 
-def display_all_contracts_table(department_id: int):
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
+def display_contracts_by_filters_table(
+    department_id: int,
+    staff_id: int = None,
+    user_id: int = None,
+    filter_name: str = None,
+):
+
+    if staff_id:
+        contracts = get_contract_by_staff_id(staff_id=staff_id)
+    elif user_id:
+        contracts = get_contract_by_user_id(user_id=user_id)
+    elif filter_name == "amount due":
+        contracts = get_contract_with_due_amount()
+    elif filter_name == "to sign":
+        contracts = get_all_contracts()
+        contracts = [contract for contract in contracts if contract.status == "To sign"]
+    else:
+        contracts = get_all_contracts()
+    data = []
+    headers = [
+        "Contract ID",
+        "Client ID",
+        "Total Amount",
+        "Amount Due",
+        "Status",
+        "Commercial Contact",
+    ]
+    for contract in contracts:
+        data.append(
+            [
+                contract.contract_id,
+                contract.client_id,
+                contract.total_amount,
+                contract.amount_due,
+                contract.status,
+                contract.commercial_contact,
+            ]
+        )
+    table = tabulate(data, headers=headers, tablefmt="pretty")
+    click.echo("\n")
+    click.echo(table)
+    click.echo("\n")
+
+
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["management"],
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
+def display_all_contracts_table(
+    department_id: int,
+):
     contracts = get_all_contracts()
     data = []
     headers = [
@@ -246,6 +342,12 @@ def display_all_contracts_table(department_id: int):
     click.echo("\n")
 
 
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["management"],
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
 def display_contract(contract: EpicContract, department_id: int):
     data = []
     headers = [
@@ -273,6 +375,7 @@ def display_contract(contract: EpicContract, department_id: int):
     click.echo("\n")
 
 
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_contract_creation(department_id: int):
     """
     Create and display information about a contract.
@@ -294,9 +397,15 @@ def display_contract_creation(department_id: int):
         "Enter the contract status",
         type=click.Choice(["To sign", "Signed", "Cancelled"], case_sensitive=False),
     )
-    commercial_contact = click.prompt(
-        "Enter the commercial contact", type=int, value_proc=validate_commercial_id
-    )
+    existing_commercial_id = has_client_assign_to_commercial(client_id)
+    if existing_commercial_id:
+        commercial_contact = existing_commercial_id
+    else:
+        commercial_contact = click.prompt(
+            "Enter the commercial contact", type=int, value_proc=validate_commercial_id
+        )
+        # Save the commercial contact to the EpicUser table
+        EpicUser.assign_commercial_to_epic_user(client_id, commercial_contact)
 
     create_contract(client_id, total_amount, amount_due, status, commercial_contact)
     click.echo(click.style("\nContract created successfully:", fg="green", bold=True))
@@ -307,6 +416,12 @@ def display_contract_creation(department_id: int):
     click.echo(click.style(f"Commercial contact: {commercial_contact}\n", fg="blue"))
 
 
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["management"],
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
 def display_update_contract_menu(contract: EpicContract, department_id: int):
     """
     Display a menu for updating contract information.
@@ -358,39 +473,50 @@ def display_update_contract_menu(contract: EpicContract, department_id: int):
         click.secho("Invalid choice", fg="red")
 
 
-def epic_contracts_menu(department_id: int):
+@has_permission(DEPARTMENTS_BY_ID["commercial"])
+def epic_contracts_filtered_menu(department_id: int, staff_id: int):
     """
-    CRU operations for contracts.
-    Users can not delete contracts.
+    Display contracts based on filters.
     """
     while True:
-        click.secho("Main menu\n", bold=True)
-        click.echo("1. See all contracts")
-        click.echo("2. Create a contract")
-        click.echo("3. Update a contract")
+        click.secho("Which contract do you want to display ?\n", bold=True)
+        click.echo("1. See my assigned contracts")
+        click.echo("2. See all contracts of a client")
+        click.echo("3. See contracts by amound due or signing status")
         click.echo("4. Return to main menu")
         click.echo("5. Exit\n")
 
         choice = click.prompt("Enter your choice\n", type=int)
 
         if choice == 1:
-            display_all_contracts_table(department_id=department_id)
+            display_contracts_by_filters_table(
+                department_id=department_id, staff_id=staff_id
+            )
 
         elif choice == 2:
-            display_contract_creation(department_id=department_id)
+            user_id = get_client_id_by_asking_id()
+            if user_id:
+                display_contracts_by_filters_table(
+                    department_id=department_id, user_id=user_id
+                )
+            else:
+                main_menu(department_id=department_id, staff_id=staff_id)
 
         elif choice == 3:
-            click.echo("Update a contract")
-            contract = get_contract_by_asking_id(department_id=department_id)
-            if contract:
-                display_contract(contract, department_id=department_id)
-                display_update_contract_menu(contract, department_id=department_id)
-                display_all_contracts_table(department_id=department_id)
-            else:
-                click.secho("\nContract not found", fg="red")
+            click.secho(
+                "Filter contracts based on outstanding amount or signing status",
+                bold=True,
+            )
+            filter_name = click.prompt(
+                "Enter the contract filter you want to display",
+                type=click.Choice(["amount due", "to sign"], case_sensitive=False),
+            )
+            display_contracts_by_filters_table(
+                department_id=department_id, filter_name=filter_name
+            )
 
         elif choice == 4:
-            main_menu(department_id=department_id)
+            main_menu(department_id=department_id, staff_id=staff_id)
 
         elif choice == 5:
             sys.exit(0)
@@ -400,12 +526,72 @@ def epic_contracts_menu(department_id: int):
             main_menu()
 
 
-def main_menu(department_id: int = None):
+@has_permission(
+    departments_allowed=[
+        DEPARTMENTS_BY_ID["management"],
+        DEPARTMENTS_BY_ID["commercial"],
+    ]
+)
+def epic_contracts_menu(department_id: int, staff_id: int):
+    """
+    CRU operations for contracts.
+    Users can not delete contracts.
+    """
+    while True:
+        click.secho("Main menu\n", bold=True)
+        click.echo("1. See all contracts")
+        click.echo("2. See specific contracts by filters")
+        click.echo("3. Create a contract")
+        click.echo("4. Update a contract")
+        click.echo("5. Return to main menu")
+        click.echo("6. Exit\n")
+
+        choice = click.prompt("Enter your choice\n", type=int)
+
+        if choice == 1:
+            display_all_contracts_table(department_id=department_id)
+
+        elif choice == 2:
+            epic_contracts_filtered_menu(department_id=department_id, staff_id=staff_id)
+
+        elif choice == 3:
+            display_contract_creation(department_id=department_id)
+
+        elif choice == 4:
+            click.echo("Update a contract")
+            contract = get_contract_by_asking_id(department_id=department_id)
+
+            if contract:
+                # Commercial can only update contracts they are assigned to
+                if (
+                    department_id == DEPARTMENTS_BY_ID["commercial"]
+                    and contract.commercial_contact != staff_id
+                ):
+                    display_contract_update_error()
+                    main_menu(department_id=department_id)
+                display_contract(contract, department_id=department_id)
+                display_update_contract_menu(contract, department_id=department_id)
+                display_all_contracts_table(department_id=department_id)
+            else:
+                click.secho("\nContract not found", fg="red")
+
+        elif choice == 5:
+            main_menu(department_id=department_id, staff_id=staff_id)
+
+        elif choice == 6:
+            sys.exit(0)
+
+        else:
+            click.secho("Invalid choice", fg="red")
+            main_menu()
+
+
+def main_menu(department_id: int = None, staff_id: int = None):
 
     # Login
     if department_id is None:
         click.echo("\nWelcome to the dashboard!\n")
-        department_id = get_department_id_by_asking_login()
+        department_id, staff_id = get_department_id_by_asking_login()
     else:
         pass
 
@@ -424,7 +610,7 @@ def main_menu(department_id: int = None):
             staff_user_menu(department_id=department_id)
 
         elif choice == 2:
-            epic_contracts_menu(department_id=department_id)
+            epic_contracts_menu(department_id=department_id, staff_id=staff_id)
 
         elif choice == 4:
             sys.exit(0)

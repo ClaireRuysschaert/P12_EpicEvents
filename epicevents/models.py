@@ -2,8 +2,16 @@ from datetime import datetime
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from sqlalchemy import (Column, DateTime, Enum, ForeignKey, Integer, Numeric,
-                        String, select)
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    select,
+)
 from sqlalchemy.orm import DeclarativeBase, Session, relationship
 
 from utils import get_session
@@ -121,7 +129,7 @@ class EpicUser(Base):
             )
 
     @staticmethod
-    def get_epic_user_by_id(session:Session, user_id: int):
+    def get_epic_user_by_id(session: Session, user_id: int):
         """
         Get epic user by id.
         """
@@ -139,17 +147,17 @@ class EpicUser(Base):
         else:
             print("Staff is not commercial")
 
-    def assign_commercial_to_epic_user(client_id:int, commercial_contact:int):
+    def assign_commercial_to_epic_user(client_id: int, commercial_contact: int):
         """
-        Assigns a commercial contact to a client. 
-        If the client does not have an assigned commercial when creating the contract, 
+        Assigns a commercial contact to a client.
+        If the client does not have an assigned commercial when creating the contract,
         the newly created commercial contact is used for assignment.
         """
         _, session = get_session()
         user = EpicUser.get_epic_user_by_id(session, client_id)
         user.assign_to = commercial_contact
         session.commit()
-    
+
     def get_user_by_staff_id(self, session: Session, staff_id: int):
         """
         Get user by staff id.
@@ -205,15 +213,13 @@ class EpicContract(Base):
         """
         Get contract with due amount.
         """
-        contract = (
-            session.query(EpicContract)
-            .filter(EpicContract.amount_due > 0)
-            .all()
-        )
+        contract = session.query(EpicContract).filter(EpicContract.amount_due > 0).all()
         return contract
-    
+
     @staticmethod
-    def get_contract_by_staff_id(session:Session, staff_id: int) -> list["EpicContract"]:
+    def get_contract_by_staff_id(
+        session: Session, staff_id: int
+    ) -> list["EpicContract"]:
         """
         Get contract by staff id.
         """
