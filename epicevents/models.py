@@ -337,3 +337,21 @@ class EpicEvent(Base):
     def get_all_events(session: Session) -> list["EpicEvent"]:
         all_events = select(EpicEvent).order_by(EpicEvent.id)
         return session.scalars(all_events)
+
+    def update(id: int, **kwargs) -> None:
+        """
+        Update the attrs of an event with the given id from the database.
+        """
+        _, session = get_session()
+        try:
+            event = EpicEvent.get_event_by_id(session, id)
+            if not event:
+                print(f"Event with id {id} does not exist")
+            for key, value in kwargs.items():
+                setattr(event, key, value)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error updating event user: {e}")
+        finally:
+            session.close()

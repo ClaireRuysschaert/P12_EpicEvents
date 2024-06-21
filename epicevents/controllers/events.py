@@ -33,3 +33,10 @@ def create_events(
     session.add(new_event)
     session.commit()
     return new_event
+
+def is_event_exists(id: int) -> Union[list[EpicEvent], None]:
+    _, session = get_session()
+    event: EpicEvent = EpicEvent.get_event_by_id(session, id)
+    if event:
+        return event
+    return None
