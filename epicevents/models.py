@@ -258,10 +258,11 @@ class EpicContract(Base):
 
 class EpicEvent(Base):
     __tablename__ = "epic_event"
-    event_id = Column("event_id", Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     contract_id = Column(
         "contract", Integer, ForeignKey("epic_contract.contract_id"), primary_key=True
     )
+    contract = relationship("EpicContract")
     start_date = Column("start_date", DateTime)
     end_date = Column("end_date", DateTime)
     support_contact = Column(
@@ -271,6 +272,15 @@ class EpicEvent(Base):
     attendees = Column("attendees", Integer)
     notes = Column("notes", String)
 
+    @staticmethod
+    def get_event_by_id(session: Session, id: int):
+        """
+        Get epic event by id.
+        """
+        event = session.query(EpicEvent).filter(EpicEvent.id == id).first()
+        return event
+
+    @staticmethod
     def get_client_name(self, session: Session, contract_id: int):
         """
         Get client name by contract id.
@@ -307,11 +317,11 @@ class EpicEvent(Base):
                 return client.email, client.phone
         return None
 
-    def get_support_contact_name(self, session: Session, event_id: int):
+    def get_support_contact_name(self, session: Session, id: int):
         """
         Get support contact name by event id.
         """
-        event = session.query(EpicEvent).filter(EpicEvent.event_id == event_id).first()
+        event = session.query(EpicEvent).filter(EpicEvent.id == id).first()
         if event:
             support_contact_id = event.support_contact
             support_contact = (
@@ -323,18 +333,7 @@ class EpicEvent(Base):
                 return support_contact.first_name, support_contact.last_name
         return None
 
-    def get_all_events(self, session: Session):
-        """
-        Get all events.
-        """
-        all_events = select(EpicEvent)
-        for event in session.scalars(all_events):
-            print(
-                event.event_id,
-                event.contract_id,
-                event.start_date,
-                event.end_date,
-                event.location,
-                event.attendees,
-                event.notes,
-            )
+    @staticmethod
+    def get_all_events(session: Session) -> list["EpicEvent"]:
+        all_events = select(EpicEvent).order_by(EpicEvent.id)
+        return session.scalars(all_events)
