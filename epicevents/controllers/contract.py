@@ -65,3 +65,12 @@ def is_contract_exists(contract_id: int) -> Union[list[EpicContract], None]:
     if contract:
         return contract
     return None
+
+def is_staff_contract_commercial_contact(staff_id: int, contract_id: int) -> bool:
+    """
+    Verifies if the staff is the commercial contact of the contract.
+    """
+    contract: EpicContract = is_contract_exists(contract_id)
+    if contract and staff_id == contract.commercial_contact:
+        return True
+    return False

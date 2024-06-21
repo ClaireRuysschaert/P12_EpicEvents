@@ -29,3 +29,12 @@ def display_epic_user_not_found_error():
     error_message = "\nEpic user not found\n"
     click.secho(error_message, fg="red")
     return error_message
+
+
+def display_staff_not_commercial_contact_error():
+    """
+    Display staff not commercial contact error message.
+    """
+    error_message = "\nYou are not the commercial contact of the contract\n"
+    click.secho(error_message, fg="red")
+    return error_message

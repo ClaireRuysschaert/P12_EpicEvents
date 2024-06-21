@@ -16,17 +16,22 @@ from epicevents.controllers.client import (  # noqa
     has_client_assign_to_commercial,
     is_client_exists,
 )
-from epicevents.controllers.contract import create_contract  # noqa
 from epicevents.controllers.contract import (  # noqa
+    create_contract, 
     get_all_contracts,
     get_contract_by_staff_id,
     get_contract_by_user_id,
     get_contract_with_due_amount,
     is_contract_exists,
+    is_staff_contract_commercial_contact,
 )
+from epicevents.controllers.events import (  # noqa
+    get_all_events,
+    create_events,
+    )
 from epicevents.controllers.permissions import has_permission  # noqa
-from epicevents.controllers.staff_user import authenticate_user  # noqa
 from epicevents.controllers.staff_user import (  # noqa
+    authenticate_user,
     create_staff_users,
     get_all_staff_users,
     is_staff_exists,
@@ -35,14 +40,18 @@ from epicevents.models import EpicContract, EpicUser, StaffUser  # noqa
 from epicevents.views.errors import (  # noqa
     display_contract_update_error,
     display_epic_user_not_found_error,
-    display_permission_error,
+    display_staff_not_commercial_contact_error,
 )
-from validators import validate_client_id  # noqa
 from validators import (  # noqa
+    validate_client_id,
     validate_amount_due,
     validate_commercial_id,
     validate_email,
     validate_total_amount,
+    validate_contract_id,
+    validate_date,
+    validate_support_id,
+    validate_attendees,
 )
 
 
@@ -52,6 +61,7 @@ def get_user_staff_by_asking_id(action: str) -> StaffUser:
     staff_id = click.prompt("Enter the staff id", type=int)
     staff = is_staff_exists(staff_id)
     return staff
+
 
 def get_client_id_by_asking_id() -> Union[int, None]:
     if DEPARTMENTS_BY_ID["commercial"]:
@@ -254,7 +264,7 @@ def staff_user_menu(department_id: int):
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu()
+            main_menu(department_id=department_id)
 
 
 @has_permission(
@@ -473,6 +483,68 @@ def display_update_contract_menu(contract: EpicContract, department_id: int):
         click.secho("Invalid choice", fg="red")
 
 
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"], DEPARTMENTS_BY_ID["commercial"], DEPARTMENTS_BY_ID["support"]])
+def display_all_events_table(department_id: int):
+    events = get_all_events()
+    data = []
+    headers = [
+        "Event ID",
+        "Contract ID",
+        "Commercial Contact",
+        "Start Date",
+        "End Date",
+        "Support Contact",
+        "Location",
+        "Attendees",
+        "Notes",
+    ]
+    for event in events:
+        data.append(
+            [
+                event.id,
+                event.contract_id,
+                event.contract.commercial_contact,
+                event.start_date,
+                event.end_date,
+                event.support_contact,
+                event.location,
+                event.attendees,
+                event.notes,
+            ]
+        )
+    table = tabulate(data, headers=headers, tablefmt="pretty")
+    click.echo("\n")
+    click.echo(table)
+    click.echo("\n")
+
+
+@has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"],])
+def display_events_creation(department_id: int, staff_id: int):
+    """
+    Create and display information about an event.
+    """
+    contract_id = click.prompt("\nEnter the contract id", type=int, value_proc=validate_contract_id)
+    if is_staff_contract_commercial_contact(staff_id, contract_id):
+        start_date = click.prompt("Enter the event start date in YYYY-MM-DD format", type=str, value_proc=validate_date)
+        end_date = click.prompt("Enter the event end date in YYYY-MM-DD format", type=str, value_proc=validate_date)
+        support_contact = click.prompt("Enter the support contact", type=int, value_proc=validate_support_id)
+        location = click.prompt("Enter the event location", type=str).capitalize()
+        attendees = click.prompt("Enter the event attendees number", type=int, value_proc=validate_attendees)
+        notes = click.prompt("Enter the event notes", type=str)
+        
+        create_events(contract_id, start_date, end_date, support_contact, location, attendees, notes)
+        click.echo(click.style("\nEvent created successfully:", fg="green", bold=True))
+        click.echo(click.style(f"Contract ID: {contract_id}", fg="blue"))
+        click.echo(click.style(f"Start date: {start_date}", fg="blue"))
+        click.echo(click.style(f"End date: {end_date}", fg="blue"))
+        click.echo(click.style(f"Support contact: {support_contact}", fg="blue"))
+        click.echo(click.style(f"Location: {location}", fg="blue"))
+        click.echo(click.style(f"Attendees: {attendees}", fg="blue"))
+        click.echo(click.style(f"Notes: {notes}\n", fg="blue"))
+    else:
+        display_staff_not_commercial_contact_error()
+
+
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
 def epic_contracts_filtered_menu(department_id: int, staff_id: int):
     """
@@ -523,7 +595,7 @@ def epic_contracts_filtered_menu(department_id: int, staff_id: int):
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu()
+            main_menu(department_id=department_id, staff_id=staff_id)
 
 
 @has_permission(
@@ -583,7 +655,61 @@ def epic_contracts_menu(department_id: int, staff_id: int):
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu()
+            main_menu(department_id=department_id, staff_id=staff_id)
+
+
+def epic_events_menu(department_id: int, staff_id: int):
+    """
+    CRU operations for events.
+    Users can not delete events.
+    """
+    while True:
+        click.secho("\nEvents menu\n", bold=True)
+        
+        # all departments
+        click.echo("1. See all events")
+        
+        # for commercial department, can only create events where they are assigned by the contract
+        # if contract.commercial_contact == staff_id -> create event
+        click.echo("2. Create an event")
+
+        # for management department, can associate a support to an event # Question => only that ??
+        # support update all fields of their assigned events
+        click.echo("3. Update an event")
+
+        click.echo("4. Return to main menu")
+        click.echo("5. Exit\n")
+
+        # + display events where there is no support assigned -> management
+        # + display their events (support contact = support staff_id) -> support 
+        if department_id == DEPARTMENTS_BY_ID["management"]:
+            click.echo("6. See events where there is no support assigned")
+        elif department_id == DEPARTMENTS_BY_ID["support"]:
+            click.echo("6. See my assigned events")
+        
+        choice = click.prompt("Enter your choice\n", type=int)
+
+        if choice == 1:
+            display_all_events_table(department_id=department_id)
+
+        elif choice == 2:
+            display_events_creation(department_id=department_id, staff_id=staff_id)
+
+        elif choice == 3:
+            pass
+
+        elif choice == 4:
+            main_menu(department_id=department_id, staff_id=staff_id)
+
+        elif choice == 5:
+            sys.exit(0)
+
+        elif choice == 6:
+            pass
+
+        else:
+            click.secho("Invalid choice", fg="red")
+            main_menu(department_id=department_id, staff_id=staff_id)
 
 
 def main_menu(department_id: int = None, staff_id: int = None):
@@ -612,6 +738,9 @@ def main_menu(department_id: int = None, staff_id: int = None):
         elif choice == 2:
             epic_contracts_menu(department_id=department_id, staff_id=staff_id)
 
+        elif choice == 3:
+            epic_events_menu(department_id=department_id, staff_id=staff_id)
+        
         elif choice == 4:
             sys.exit(0)
 

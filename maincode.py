@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, select
 
-from epicevents.models import StaffUser, Department
+from epicevents.models import StaffUser, Department, EpicEvent
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from local_settings import postgresql as settings
@@ -38,29 +38,29 @@ def get_session():
 engine, session = get_session()
 
 
-def add_department(session: Session):
-    s = select(StaffUser).where(StaffUser.department == "management")
-    for staff in session.scalars(s):
-        staff.department = "management"
-        session.commit()
-        new_department = Department(name="management", employees=staff.staff_id)
-        session.add(new_department)
+# def add_department(session: Session):
+#     s = select(StaffUser).where(StaffUser.department == "management")
+#     for staff in session.scalars(s):
+#         staff.department = "management"
+#         session.commit()
+#         new_department = Department(name="management", employees=staff.staff_id)
+#         session.add(new_department)
 
 
 # add_department(session)
 # init_department(session)
 
-users = select(StaffUser).where(StaffUser.email == "jojo@jojo.fr")
-for user in session.scalars(users):
-    print(
-        user.first_name, user.last_name, user.department_id, user.password, user.email
-    )
-print(
-    session.query(StaffUser)
-    .filter(StaffUser.email == "jojo@jojo.fr")
-    .first()
-    .first_name
-)
+# users = select(StaffUser).where(StaffUser.email == "jojo@jojo.fr")
+# for user in session.scalars(users):
+#     print(
+#         user.first_name, user.last_name, user.department_id, user.password, user.email
+#     )
+# print(
+#     session.query(StaffUser)
+#     .filter(StaffUser.email == "jojo@jojo.fr")
+#     .first()
+#     .first_name
+# )
 # for user in session.scalars(users):
 #     user: StaffUser
 
@@ -123,16 +123,17 @@ print(
 # session.add(new_staff)
 # session.commit()
 
-# new_user = EpicUser(
-#     first_name="James",
-#     last_name="Cameron",
-#     email="james.cameron@example.com",
-#     phone="0555555555",
-#     company="Cameron Production",
-#     assign_to=new_staff.staff_id,
+# new_event = EpicEvent(
+#     contract_id=1,
+#     start_date="2024-09-05",
+#     end_date="2024-09-10",
+#     support_contact=33,
+#     location="Bordeaux",
+#     attendees=688,
+#     notes="This is a test event."
 # )
 
-# session.add(new_user)
+# session.add(new_event)
 # session.commit()
 
 # users = session.query(EpicUser).order_by(EpicUser.first_name).all()
