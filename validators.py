@@ -102,3 +102,12 @@ def validate_attendees(attendees: int) -> Union[int, None]:
     if int(attendees) < 0:
         raise click.BadParameter("Number of attendees cannot be negative.")
     return attendees
+
+
+def validate_phone_number(phone_number: str) -> Union[str, None]:
+    """
+    Validates if the given phone number is a valid French phone number.
+    """
+    if not re.match(r"^0[1-9]\d{8}$", phone_number):
+        raise click.BadParameter("The phone number is not a valid French number")
+    return phone_number

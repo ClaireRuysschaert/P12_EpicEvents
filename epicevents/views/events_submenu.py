@@ -22,11 +22,7 @@ from epicevents.controllers.events import (  # noqa
 from epicevents.controllers.permissions import has_permission  # noqa
 from epicevents.models import EpicEvent  # noqa
 from epicevents.views.errors import display_staff_not_commercial_contact_error  # noqa
-from utils import (  # noqa
-    is_management_team,
-    is_commercial_team,
-    is_support_team,
-)
+from utils import is_commercial_team, is_management_team, is_support_team  # noqa
 from validators import (  # noqa
     validate_attendees,
     validate_contract_id,

@@ -117,24 +117,15 @@ class EpicUser(Base):
 
     @staticmethod
     def get_all_users(session: Session):
-        all_users = select(EpicUser)
-        for user in session.scalars(all_users):
-            print(
-                user.first_name,
-                user.last_name,
-                user.email,
-                user.phone,
-                user.company,
-                user.assign_to,
-            )
+        all_users = select(EpicUser).order_by(EpicUser.user_id)
+        return session.scalars(all_users)
 
     @staticmethod
     def get_epic_user_by_id(session: Session, user_id: int):
         """
         Get epic user by id.
         """
-        user = session.query(EpicUser).filter(EpicUser.user_id == user_id).first()
-        return user
+        return session.query(EpicUser).filter(EpicUser.user_id == user_id).first()
 
     def assign_to_commercial_staff(self, session: Session, staff_id: int):
         """
@@ -164,6 +155,24 @@ class EpicUser(Base):
         """
         user = session.query(EpicUser).filter(EpicUser.assign_to == staff_id).all()
         return user
+
+    def update(user_id: int, **kwargs) -> None:
+        """
+        Update the attrs of a user with the given user_id from the database.
+        """
+        _, session = get_session()
+        try:
+            user = EpicUser.get_epic_user_by_id(session, user_id)
+            if not user:
+                print(f"User with id {user_id} does not exist")
+            for key, value in kwargs.items():
+                setattr(user, key, value)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error updating user: {e}")
+        finally:
+            session.close()
 
 
 class EpicContract(Base):

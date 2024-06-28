@@ -77,7 +77,7 @@ def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def display_staff_user(staff: StaffUser, department_id: int):
+def display_staff_user(staff: StaffUser, department_id: int) -> None:
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
     data.append(

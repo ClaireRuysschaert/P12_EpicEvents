@@ -48,7 +48,8 @@ def main_menu(department_id: int = None, staff_id: int = None):
         click.echo("1. See the staff menu")
         click.echo("2. See the contracts menu")
         click.echo("3. See the events menu")
-        click.echo("4. Exit\n")
+        click.echo("4. See the client menu")
+        click.echo("5. Exit\n")
 
         choice = click.prompt("Enter your choice\n", type=int)
 
@@ -68,6 +69,11 @@ def main_menu(department_id: int = None, staff_id: int = None):
             epic_events_menu(department_id=department_id, staff_id=staff_id)
 
         elif choice == 4:
+            from epicevents.views.client_submenu import client_menu
+
+            client_menu(department_id=department_id, staff_id=staff_id)
+
+        elif choice == 5:
             sys.exit(0)
 
         else:
