@@ -1,9 +1,8 @@
-import itertools
 import unittest
 from unittest import mock
 from unittest.mock import patch
 from epicevents.models import StaffUser, EpicUser
-from epicevents.views.main_menu import epic_contracts_menu
+from epicevents.views.contracts_submenu import epic_contracts_menu
 from constants import DEPARTMENTS_BY_ID
 
 
@@ -82,37 +81,3 @@ class TestContractsMenu(unittest.TestCase):
                 mock.call(department_id=self.commercial_department_id),
             ]
         )
-        
-    # @patch("epicevents.views.main_menu.click.prompt")
-    # @patch("epicevents.views.main_menu.click.echo")
-    # @patch("epicevents.views.main_menu.click.secho")
-    # @patch("epicevents.views.main_menu.display_contract_creation")
-    # def test_create_contract_by_department(self, mock_creation, mock_secho, mock_echo, mock_prompt):
-    #     mock_prompt.side_effect = [3, 6]
-    #     try:
-    #         epic_contracts_menu(
-    #             department_id=self.support.department_id,
-    #             staff_id=self.support.staff_id,
-    #         )
-    #     except SystemExit:
-    #         pass
-    #     mock_creation.assert_not_called()
-
-    #     mock_prompt.side_effect = [3, 6]
-    #     try:
-    #         epic_contracts_menu(
-    #             department_id=self.commercial.department_id, staff_id=self.commercial.staff_id
-    #         )
-    #     except SystemExit:
-    #         pass
-    #     mock_creation.assert_not_called()
-        
-        
-    #     mock_prompt.side_effect = [3, self.client.user_id, 400, 200, "To sign", self.commercial.staff_id, 6]
-    #     try:
-    #         epic_contracts_menu(
-    #             department_id=self.manager.department_id, staff_id=self.manager.staff_id
-    #         )
-    #     except SystemExit:
-    #         pass
-    #     mock_creation.assert_called_once_with(department_id=self.management_department_id)

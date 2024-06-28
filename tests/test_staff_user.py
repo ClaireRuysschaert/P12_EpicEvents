@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from epicevents.views.main_menu import staff_user_menu
+from epicevents.views.user_staff_submenu import staff_user_menu
 from constants import DEPARTMENTS_BY_ID
 
 
