@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Union
 import click
 import re
-from epicevents.models import EpicUser, StaffUser, EpicContract, EpicEvent
+from epicevents.models import EpicUser, StaffUser, EpicContract
 from utils import get_session
 from constants import DEPARTMENTS_BY_ID
+
 
 def validate_email(email: str) -> Union[str, None]:
     """
@@ -56,6 +57,7 @@ def validate_commercial_id(staff_id: int) -> Union[int, None]:
         raise click.BadParameter("The staff is not in commercial department")
     return staff_id
 
+
 def validate_contract_id(contract_id: int) -> Union[int, None]:
     """
     Verifies if the contract exists in the database.
@@ -65,6 +67,7 @@ def validate_contract_id(contract_id: int) -> Union[int, None]:
     if not contract:
         raise click.BadParameter("The contract_id is not valid")
     return contract_id
+
 
 def validate_date(date: str) -> Union[datetime, None]:
     """
@@ -78,6 +81,7 @@ def validate_date(date: str) -> Union[datetime, None]:
     except ValueError:
         raise click.BadParameter('Date must be in YYYY-MM-DD format')
 
+
 def validate_support_id(support_contact: int) -> Union[int, None]:
     """
     Verifies if the support contact exists in the database.
@@ -89,6 +93,7 @@ def validate_support_id(support_contact: int) -> Union[int, None]:
     if support.department_id != DEPARTMENTS_BY_ID["support"]:
         raise click.BadParameter("The staff is not in support department")
     return support_contact
+
 
 def validate_attendees(attendees: int) -> Union[int, None]:
     """

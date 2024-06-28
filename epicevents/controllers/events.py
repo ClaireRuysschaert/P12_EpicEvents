@@ -1,11 +1,21 @@
 from typing import Union
-from ..models import EpicEvent
+
 from utils import get_session
+
+from ..models import EpicEvent
 
 
 def get_all_events() -> Union[list[EpicEvent], None]:
     _, session = get_session()
     events = EpicEvent.get_all_events(session)
+    if events:
+        return events
+    return None
+
+
+def get_all_staff_events(staff_id: int) -> Union[list[EpicEvent], None]:
+    _, session = get_session()
+    events = EpicEvent.get_all_staff_events(session, staff_id)
     if events:
         return events
     return None
@@ -33,6 +43,7 @@ def create_events(
     session.add(new_event)
     session.commit()
     return new_event
+
 
 def is_event_exists(id: int) -> Union[list[EpicEvent], None]:
     _, session = get_session()

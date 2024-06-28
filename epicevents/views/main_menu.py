@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from typing import Union
 
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
@@ -55,16 +54,19 @@ def main_menu(department_id: int = None, staff_id: int = None):
 
         if choice == 1:
             from epicevents.views.user_staff_submenu import staff_user_menu
+
             staff_user_menu(department_id=department_id)
 
         elif choice == 2:
             from epicevents.views.contracts_submenu import epic_contracts_menu
+
             epic_contracts_menu(department_id=department_id, staff_id=staff_id)
 
         elif choice == 3:
             from epicevents.views.events_submenu import epic_events_menu
+
             epic_events_menu(department_id=department_id, staff_id=staff_id)
-        
+
         elif choice == 4:
             sys.exit(0)
 

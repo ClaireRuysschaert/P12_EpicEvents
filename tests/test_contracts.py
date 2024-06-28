@@ -45,7 +45,7 @@ class TestContractsMenu(unittest.TestCase):
     def test_read_contracts_by_departments(
         self, mock_table, mock_secho, mock_echo, mock_prompt
     ):
-        # Support department can't see contracts       
+        # Support department can't see contracts
         mock_prompt.side_effect = [1, 6]
         try:
             epic_contracts_menu(
@@ -55,7 +55,7 @@ class TestContractsMenu(unittest.TestCase):
         except SystemExit:
             pass
         mock_table.assert_not_called()
-        
+
         # Manager and Commercial departments can see contracts
         mock_prompt.side_effect = [1, 6]
         try:

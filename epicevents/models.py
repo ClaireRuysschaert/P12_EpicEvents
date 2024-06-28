@@ -240,7 +240,8 @@ class EpicContract(Base):
     def update(contract_id: int, **kwargs) -> None:
         """
         Update the attrs of a contract with the given contract_id from the database.
-        If 'client_id' is provided in kwargs, also update the commercial_contact of the client.
+        If 'client_id' is provided in kwargs, also update the commercial_contact
+        of the client.
         """
         _, session = get_session()
         try:
@@ -250,7 +251,7 @@ class EpicContract(Base):
             for key, value in kwargs.items():
                 setattr(contract, key, value)
                 session.commit()
-            
+
             if "client_id" in kwargs and contract.commercial_contact is None:
                 contract.commercial_contact = EpicUser.get_epic_user_by_id(
                     session, kwargs["client_id"]
@@ -345,6 +346,13 @@ class EpicEvent(Base):
     def get_all_events(session: Session) -> list["EpicEvent"]:
         all_events = select(EpicEvent).order_by(EpicEvent.id)
         return session.scalars(all_events)
+
+    @staticmethod
+    def get_all_staff_events(session: Session, staff_id: int) -> list["EpicEvent"]:
+        all_staff_events = select(EpicEvent).filter(
+            EpicEvent.support_contact == staff_id
+        )
+        return session.scalars(all_staff_events)
 
     def update(id: int, **kwargs) -> None:
         """

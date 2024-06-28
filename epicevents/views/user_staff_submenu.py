@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from typing import Union
 
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
@@ -18,9 +17,7 @@ from epicevents.controllers.staff_user import (  # noqa
     is_staff_exists,
 )
 from epicevents.models import StaffUser  # noqa
-from validators import (  # noqa
-    validate_email,
-)
+from validators import validate_email  # noqa
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
@@ -72,7 +69,7 @@ def display_created_staff_user(department_id: int) -> None:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def get_user_staff_by_asking_id(action: str, department_id:int) -> StaffUser:
+def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
     click.echo(f"Please enter the staff id to {action}")
     staff_id = click.prompt("Enter the staff id", type=int)
     staff = is_staff_exists(staff_id)
@@ -182,6 +179,7 @@ def staff_user_menu(department_id: int):
 
         elif choice == 5:
             from epicevents.views.main_menu import main_menu
+
             main_menu(department_id=department_id)
 
         # Exit

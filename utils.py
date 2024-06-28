@@ -1,3 +1,5 @@
+from constants import DEPARTMENTS_BY_ID
+
 from local_settings import postgresql as settings
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine
@@ -33,3 +35,15 @@ def get_session():
 
 
 engine, session = get_session()
+
+
+def is_management_team(department_id: int) -> bool:
+    return department_id == DEPARTMENTS_BY_ID["management"]
+
+
+def is_commercial_team(department_id: int) -> bool:
+    return department_id == DEPARTMENTS_BY_ID["commercial"]
+
+
+def is_support_team(department_id: int) -> bool:
+    return department_id == DEPARTMENTS_BY_ID["support"]

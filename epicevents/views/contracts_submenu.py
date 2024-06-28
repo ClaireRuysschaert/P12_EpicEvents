@@ -16,7 +16,7 @@ from epicevents.controllers.client import (  # noqa
     is_client_exists,
 )
 from epicevents.controllers.contract import (  # noqa
-    create_contract, 
+    create_contract,
     get_all_contracts,
     get_contract_by_staff_id,
     get_contract_by_user_id,
@@ -29,9 +29,10 @@ from epicevents.views.errors import (  # noqa
     display_contract_update_error,
     display_epic_user_not_found_error,
 )
+from utils import is_commercial_team  # noqa
 from validators import (  # noqa
-    validate_client_id,
     validate_amount_due,
+    validate_client_id,
     validate_commercial_id,
     validate_total_amount,
 )
@@ -139,6 +140,7 @@ def epic_contracts_filtered_menu(department_id: int, staff_id: int):
     Display contracts based on filters.
     """
     from epicevents.views.main_menu import main_menu
+
     while True:
         click.secho("\nWhich contract do you want to display ?\n", bold=True)
         click.echo("1. See my assigned contracts")
@@ -318,7 +320,6 @@ def display_update_contract_menu(contract: EpicContract, department_id: int):
         click.secho("Invalid choice", fg="red")
 
 
-
 @has_permission(
     departments_allowed=[
         DEPARTMENTS_BY_ID["management"],
@@ -344,6 +345,7 @@ def epic_contracts_menu(department_id: int, staff_id: int):
     Users can not delete contracts.
     """
     from epicevents.views.main_menu import main_menu
+
     while True:
         click.secho("\nContracts menu\n", bold=True)
         click.echo("1. See all contracts")
@@ -370,7 +372,7 @@ def epic_contracts_menu(department_id: int, staff_id: int):
             if contract:
                 # Commercial can only update contracts they are assigned to
                 if (
-                    department_id == DEPARTMENTS_BY_ID["commercial"]
+                    is_commercial_team(department_id=department_id)
                     and contract.commercial_contact != staff_id
                 ):
                     display_contract_update_error()
