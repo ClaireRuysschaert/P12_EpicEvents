@@ -240,6 +240,7 @@ class EpicContract(Base):
     def update(contract_id: int, **kwargs) -> None:
         """
         Update the attrs of a contract with the given contract_id from the database.
+        If 'client_id' is provided in kwargs, also update the commercial_contact of the client.
         """
         _, session = get_session()
         try:
@@ -249,6 +250,13 @@ class EpicContract(Base):
             for key, value in kwargs.items():
                 setattr(contract, key, value)
                 session.commit()
+            
+            if "client_id" in kwargs and contract.commercial_contact is None:
+                contract.commercial_contact = EpicUser.get_epic_user_by_id(
+                    session, kwargs["client_id"]
+                ).assign_to
+                session.commit()
+
         except Exception as e:
             session.rollback()
             print(f"Error updating contract user: {e}")
