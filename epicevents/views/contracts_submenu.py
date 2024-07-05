@@ -11,10 +11,6 @@ import click  # noqa
 from tabulate import tabulate  # noqa
 
 from constants import DEPARTMENTS_BY_ID  # noqa
-from epicevents.controllers.epic_user import (  # noqa
-    has_client_assign_to_commercial,
-    is_client_exists,
-)
 from epicevents.controllers.contract import (  # noqa
     create_contract,
     get_all_contracts,
@@ -22,6 +18,10 @@ from epicevents.controllers.contract import (  # noqa
     get_contract_by_user_id,
     get_contract_with_due_amount,
     is_contract_exists,
+)
+from epicevents.controllers.epic_user import (  # noqa
+    has_client_assign_to_commercial,
+    is_client_exists,
 )
 from epicevents.controllers.permissions import has_permission  # noqa
 from epicevents.models import EpicContract, EpicUser  # noqa

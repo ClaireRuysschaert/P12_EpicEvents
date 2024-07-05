@@ -1,9 +1,73 @@
 import unittest
 from unittest import mock
-from unittest.mock import patch
-from epicevents.models import StaffUser, EpicUser
+from unittest.mock import MagicMock, patch
+from epicevents.models import StaffUser, EpicUser, EpicContract
 from epicevents.views.contracts_submenu import epic_contracts_menu
 from constants import DEPARTMENTS_BY_ID
+from epicevents.controllers.contract import (
+    get_all_contracts,
+    create_contract,
+    get_contract_by_staff_id,
+    get_contract_by_user_id,
+    get_contract_with_due_amount,
+    is_contract_exists,
+    is_staff_contract_commercial_contact,
+)
+
+
+class ContractsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.mock_session = MagicMock()
+        self.mock_query = MagicMock()
+        self.mock_session.query.return_value = self.mock_query
+        self.mock_query.filter.return_value = self.mock_query
+        self.contract = EpicContract(
+            client_id=1,
+            total_amount=500,
+            amount_due=250,
+            created_on="2023-10-10",
+            status="Signed",
+            commercial_contact=1,
+        )
+
+    def test_get_all_contracts(self):
+        with patch("epicevents.controllers.contract.get_session") as mock_get_session:
+            mock_get_session.return_value = (None, self.mock_session)
+            result = get_all_contracts()
+            self.assertIsNotNone(result)
+
+    def test_create_contract(self):
+        with patch("epicevents.controllers.contract.get_session") as mock_get_session:
+            mock_get_session.return_value = (None, self.mock_session)
+            user_created = create_contract(
+                1, 200, 200, "Signed", 1
+            )
+            self.assertIsNotNone(user_created)
+
+    def test_client_get_contract_methods(self):
+        with patch("epicevents.controllers.contract.get_session") as mock_get_session:
+            mock_get_session.return_value = (None, self.mock_session)
+            result = get_contract_by_staff_id(self.contract.commercial_contact)
+            self.assertIsNotNone(result)
+            result = get_contract_by_user_id(self.contract.client_id)
+            self.assertIsNotNone(result)
+            result = get_contract_with_due_amount()
+            self.assertIsNotNone(result)
+
+    def test_is_contract_exists(self):
+        with patch("epicevents.controllers.contract.get_session") as mock_get_session:
+            mock_get_session.return_value = (None, self.mock_session)
+            result = is_contract_exists(self.contract.contract_id)
+            self.assertIsNotNone(result)
+
+    def test_is_staff_contract_commercial_contact(self):
+        with patch("epicevents.controllers.contract.get_session") as mock_get_session:
+            mock_get_session.return_value = (None, self.mock_session)
+            result = is_staff_contract_commercial_contact(
+                self.contract.commercial_contact,
+                self.contract.contract_id,
+                )
+            self.assertIsNotNone(result)
 
 
 class TestContractsMenu(unittest.TestCase):
@@ -41,7 +105,7 @@ class TestContractsMenu(unittest.TestCase):
     @patch("epicevents.views.main_menu.click.prompt")
     @patch("epicevents.views.main_menu.click.echo")
     @patch("epicevents.views.main_menu.click.secho")
-    @patch("epicevents.views.main_menu.display_all_contracts_table")
+    @patch("epicevents.views.contracts_submenu.display_all_contracts_table")
     def test_read_contracts_by_departments(
         self, mock_table, mock_secho, mock_echo, mock_prompt
     ):

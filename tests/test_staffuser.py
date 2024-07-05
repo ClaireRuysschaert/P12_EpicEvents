@@ -23,7 +23,7 @@ class StaffUserTestCase(unittest.TestCase):
             department_id=1,
         )
 
-    def test_is_staffuser_exists(self, mock_get_session):
+    def test_is_staffuser_exists(self):
         with patch("epicevents.controllers.staff_user.get_session") as mock_get_session:
             mock_get_session.return_value = (None, self.mock_session)
             result = is_staff_exists(self.client.staff_id)
