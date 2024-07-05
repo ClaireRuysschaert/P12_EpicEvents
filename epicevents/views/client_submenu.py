@@ -14,7 +14,7 @@ from constants import DEPARTMENTS_BY_ID  # noqa
 from epicevents.controllers.epic_user import (  # noqa
     create_user,
     get_all_users,
-    is_user_exists,
+    is_client_exists,
 )
 from epicevents.controllers.permissions import has_permission  # noqa
 from epicevents.models import EpicUser  # noqa
@@ -85,7 +85,7 @@ def display_created_client(department_id: int, staff_id: int) -> None:
 
 def get_user_by_asking_id(department_id: int) -> Union[EpicUser, None]:
     user_id = click.prompt("Please enter the user ID to update", type=int)
-    user = is_user_exists(user_id)
+    user = is_client_exists(user_id)
     return user
 
 

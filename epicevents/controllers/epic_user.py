@@ -33,10 +33,18 @@ def create_user(
     return new_user
 
 
-def is_user_exists(user_id: int) -> Union[EpicUser, None]:
+def has_client_assign_to_commercial(client_id: int) -> Union[int, None]:
     _, session = get_session()
-    user: EpicUser = EpicUser.get_epic_user_by_id(session, user_id)
-    if user:
-        return user
-    else:
-        return None
+    client: EpicUser = EpicUser.get_epic_user_by_id(session, client_id)
+    if client:
+        return client.assign_to
+    return None
+
+
+
+def is_client_exists(user_id: int) -> Union[int, None]:
+    _, session = get_session()
+    client: EpicUser = EpicUser.get_epic_user_by_id(session, user_id=user_id)
+    if client:
+        return client.user_id
+    return None

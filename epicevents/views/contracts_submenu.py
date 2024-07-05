@@ -11,7 +11,7 @@ import click  # noqa
 from tabulate import tabulate  # noqa
 
 from constants import DEPARTMENTS_BY_ID  # noqa
-from epicevents.controllers.client import (  # noqa
+from epicevents.controllers.epic_user import (  # noqa
     has_client_assign_to_commercial,
     is_client_exists,
 )
