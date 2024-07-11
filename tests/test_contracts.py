@@ -7,9 +7,9 @@ from constants import DEPARTMENTS_BY_ID
 from epicevents.controllers.contract import (
     get_all_contracts,
     create_contract,
-    get_contract_by_staff_id,
+    get_contracts_by_staff_id,
     get_contract_by_user_id,
-    get_contract_with_due_amount,
+    get_contracts_with_due_amount,
     is_contract_exists,
     is_staff_contract_commercial_contact,
 )
@@ -39,19 +39,17 @@ class ContractsTestCase(unittest.TestCase):
     def test_create_contract(self):
         with patch("epicevents.controllers.contract.get_session") as mock_get_session:
             mock_get_session.return_value = (None, self.mock_session)
-            user_created = create_contract(
-                1, 200, 200, "Signed", 1
-            )
+            user_created = create_contract(1, 200, 200, "Signed", 1)
             self.assertIsNotNone(user_created)
 
     def test_client_get_contract_methods(self):
         with patch("epicevents.controllers.contract.get_session") as mock_get_session:
             mock_get_session.return_value = (None, self.mock_session)
-            result = get_contract_by_staff_id(self.contract.commercial_contact)
+            result = get_contracts_by_staff_id(self.contract.commercial_contact)
             self.assertIsNotNone(result)
             result = get_contract_by_user_id(self.contract.client_id)
             self.assertIsNotNone(result)
-            result = get_contract_with_due_amount()
+            result = get_contracts_with_due_amount()
             self.assertIsNotNone(result)
 
     def test_is_contract_exists(self):
@@ -66,8 +64,54 @@ class ContractsTestCase(unittest.TestCase):
             result = is_staff_contract_commercial_contact(
                 self.contract.commercial_contact,
                 self.contract.contract_id,
-                )
+            )
             self.assertIsNotNone(result)
+
+    @patch("epicevents.controllers.contract.get_session")
+    @patch("epicevents.models.EpicContract.get_all_contracts")
+    def test_get_all_contracts_none(self, mock_get_all_contracts, mock_get_session):
+        mock_get_session.return_value = (None, self.mock_session)
+        mock_get_all_contracts.return_value = None
+        result = get_all_contracts()
+        self.assertIsNone(result)
+
+    @patch("epicevents.controllers.contract.get_session")
+    @patch("epicevents.models.EpicContract.get_contracts_by_staff_id")
+    def test_get_contracts_by_staff_id_none(
+        self, mock_get_contracts_by_staff_id, mock_get_session
+    ):
+        mock_get_session.return_value = (None, self.mock_session)
+        mock_get_contracts_by_staff_id.return_value = None
+        result = get_contracts_by_staff_id(1)
+        self.assertIsNone(result)
+
+    @patch("epicevents.controllers.contract.get_session")
+    @patch("epicevents.models.EpicContract.get_contracts_by_client_id")
+    def test_get_contract_by_user_id_none(
+        self, mock_get_contracts_by_client_id, mock_get_session
+    ):
+        mock_get_session.return_value = (None, self.mock_session)
+        mock_get_contracts_by_client_id.return_value = None
+        result = get_contract_by_user_id(1)
+        self.assertIsNone(result)
+
+    @patch("epicevents.controllers.contract.get_session")
+    @patch("epicevents.models.EpicContract.get_contracts_with_due_amount")
+    def test_get_contracts_with_due_amount_none(
+        self, mock_get_contracts_with_due_amount, mock_get_session
+    ):
+        mock_get_session.return_value = (None, self.mock_session)
+        mock_get_contracts_with_due_amount.return_value = None
+        result = get_contracts_with_due_amount()
+        self.assertIsNone(result)
+
+    @patch("epicevents.controllers.contract.get_session")
+    @patch("epicevents.models.EpicContract.get_contract_by_id")
+    def test_is_contract_exists_none(self, mock_get_contract_by_id, mock_get_session):
+        mock_get_session.return_value = (None, self.mock_session)
+        mock_get_contract_by_id.return_value = None
+        result = is_contract_exists(self.contract.contract_id)
+        self.assertIsNone(result)
 
 
 class TestContractsMenu(unittest.TestCase):

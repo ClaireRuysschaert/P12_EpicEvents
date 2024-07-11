@@ -50,7 +50,3 @@ class EventsTestCase(unittest.TestCase):
             mock_get_session.return_value = (None, self.mock_session)
             result = is_event_exists(self.event.id)
             self.assertIsNotNone(result)
-
-
-if __name__ == '__main__':
-    unittest.main()
