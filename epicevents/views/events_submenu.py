@@ -35,6 +35,10 @@ from validators import (  # noqa
     departments_allowed=[DEPARTMENTS_BY_ID["management"], DEPARTMENTS_BY_ID["support"]]
 )
 def get_event_by_asking_id(department_id: int) -> Union[EpicEvent, None]:
+    """
+    Fetch an event by asking the user to input the event id and return
+    the event if exists. If not found, return None.
+    """
     click.echo("Please enter the event id to update")
     event_id = click.prompt("Enter the event id", type=int)
     event = is_event_exists(event_id)
@@ -104,6 +108,9 @@ def display_all_events_table(
     ]
 )
 def display_event(event: EpicEvent, department_id: int) -> None:
+    """
+    Display informations about an event.
+    """
     data = []
     headers = [
         "Event ID",
@@ -137,6 +144,9 @@ def display_event(event: EpicEvent, department_id: int) -> None:
 
 
 def display_event_menu(department_id: int) -> None:
+    """
+    Display the CRU event menu.
+    """
     click.secho("\nEvents menu\n", bold=True)
     click.echo("1. See all events")
     click.echo("2. Create an event")
@@ -155,8 +165,9 @@ def display_event_menu(department_id: int) -> None:
 @has_permission(
     departments_allowed=[DEPARTMENTS_BY_ID["management"], DEPARTMENTS_BY_ID["support"]]
 )
-def display_update_event_menu(event: EpicEvent, department_id: int):
-    """Display a menu for updating event information.
+def display_update_event_menu(event: EpicEvent, department_id: int) -> None:
+    """
+    Display a menu for updating event information.
     Management team can only associate a support to an event.
     Support team can update all fields of their assigned events.
     """
@@ -219,7 +230,7 @@ def display_update_event_menu(event: EpicEvent, department_id: int):
         DEPARTMENTS_BY_ID["commercial"],
     ]
 )
-def display_events_creation(department_id: int, staff_id: int):
+def display_events_creation(department_id: int, staff_id: int) -> None:
     """
     Create and display information about an event.
     """
@@ -270,7 +281,10 @@ def display_events_creation(department_id: int, staff_id: int):
 def update_event_permission_check(
     event: EpicEvent, is_support_team: bool, staff_id: int, department_id: int
 ) -> None:
-    # Support team can only update their assigned events
+    """
+    Check permsssion to update an event. Support team can only update their
+    assigned events.
+    """
     if is_support_team and event.support_contact != staff_id:
         click.secho("\nYou are not the support contact of the event\n", fg="red")
         epic_events_menu(department_id=department_id, staff_id=staff_id)
@@ -280,6 +294,11 @@ def update_event_permission_check(
 def fetch_event_or_notify_failure(
     department_id: int, staff_id: int
 ) -> Union[EpicEvent, None]:
+    """
+    Fetch event by asking the user to input the event id.
+    Return event only if found and the user is in commercial team.
+    If not, notify the user and return None.
+    """
     event = get_event_by_asking_id(department_id=department_id)
     if is_commercial_team(department_id=department_id):
         epic_events_menu(department_id=department_id, staff_id=staff_id)
@@ -293,6 +312,9 @@ def fetch_event_or_notify_failure(
 
 
 def event_update(department_id: int, staff_id: int) -> None:
+    """
+    Update and display to staff an event.
+    """
     event = fetch_event_or_notify_failure(
         department_id=department_id, staff_id=staff_id
     )
@@ -302,7 +324,7 @@ def event_update(department_id: int, staff_id: int) -> None:
     display_all_events_table(department_id=department_id)
 
 
-def epic_events_menu(department_id: int, staff_id: int):
+def epic_events_menu(department_id: int, staff_id: int) -> None:
     """
     CRU operations for events.
     Users can not delete events.

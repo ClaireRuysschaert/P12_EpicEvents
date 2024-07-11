@@ -157,74 +157,82 @@ class ValidatorsTestCase(unittest.TestCase):
         )
 
     def test_validate_date_valid_future_date(self):
-        future_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        future_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         parsed_date = validate_date(future_date)
-        self.assertEqual(parsed_date.strftime('%Y-%m-%d'), future_date)
+        self.assertEqual(parsed_date.strftime("%Y-%m-%d"), future_date)
 
     def test_validate_date_invalid_format(self):
         with self.assertRaises(click.BadParameter) as context:
             validate_date("2023/10/10")
-        self.assertEqual(str(context.exception), 'Date must be in YYYY-MM-DD format')
+        self.assertEqual(str(context.exception), "Date must be in YYYY-MM-DD format")
 
     def test_validate_date_past_date(self):
-        past_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+        past_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         with self.assertRaises(click.BadParameter) as context:
             validate_date(past_date)
         self.assertEqual(str(context.exception), "The date must be in the future")
-    
-    @patch('validators.get_session')
-    @patch('epicevents.models.StaffUser.get_user_by_id')
+
+    @patch("validators.get_session")
+    @patch("epicevents.models.StaffUser.get_user_by_id")
     def test_validate_support_id_valid(self, mock_get_user_by_id, mock_get_session):
         mock_get_session.return_value = (None, self.mock_session)
         self.staff.department_id = DEPARTMENTS_BY_ID["support"]
         mock_get_user_by_id.return_value = self.staff
-        
+
         self.assertEqual(validate_support_id(self.staff.staff_id), 1)
         mock_get_user_by_id.assert_called_once_with(self.mock_session, staff_id=1)
 
-    @patch('validators.get_session')
-    @patch('epicevents.models.StaffUser.get_user_by_id')
-    def test_validate_support_id_invalid_support(self, mock_get_user_by_id, mock_get_session):
+    @patch("validators.get_session")
+    @patch("epicevents.models.StaffUser.get_user_by_id")
+    def test_validate_support_id_invalid_support(
+        self, mock_get_user_by_id, mock_get_session
+    ):
         mock_get_session.return_value = (None, self.mock_session)
         mock_get_user_by_id.return_value = None
-        
+
         with self.assertRaises(click.BadParameter) as context:
             validate_support_id(self.staff.staff_id)
         self.assertEqual(str(context.exception), "The support contact is not valid")
         mock_get_user_by_id.assert_called_once_with(self.mock_session, staff_id=1)
 
-    @patch('validators.get_session')
-    @patch('epicevents.models.StaffUser.get_user_by_id')
-    def test_validate_support_id_not_support(self, mock_get_user_by_id, mock_get_session):
+    @patch("validators.get_session")
+    @patch("epicevents.models.StaffUser.get_user_by_id")
+    def test_validate_support_id_not_support(
+        self, mock_get_user_by_id, mock_get_session
+    ):
         mock_get_session.return_value = (None, self.mock_session)
         self.staff.department_id = DEPARTMENTS_BY_ID["management"]
         mock_get_user_by_id.return_value = self.staff
-        
+
         with self.assertRaises(click.BadParameter) as context:
             validate_support_id(self.staff.staff_id)
-        self.assertEqual(str(context.exception), "The staff is not in support department")
+        self.assertEqual(
+            str(context.exception), "The staff is not in support department"
+        )
         mock_get_user_by_id.assert_called_once_with(self.mock_session, staff_id=1)
-    
+
     def test_validate_attendees_valid(self):
         self.assertEqual(validate_attendees(10), 10)
         self.assertEqual(validate_attendees(0), 0)
         with self.assertRaises(click.BadParameter) as context:
             validate_attendees(-1)
         context.exception, "Number of attendees cannot be negative."
-    
+
     def test_validate_phone_number_valid(self):
         valid_phone_number = "0123456789"
         self.assertEqual(validate_phone_number(valid_phone_number), valid_phone_number)
 
     def test_validate_phone_number_invalid(self):
         invalid_phone_numbers = [
-            "123456789",    # Missing leading 0
-            "012345678",    # Too short
+            "123456789",  # Missing leading 0
+            "012345678",  # Too short
             "01234567890",  # Too long
-            "0A23456789",   # Contains a letter
-            "0012345678",   # Starts with 00
+            "0A23456789",  # Contains a letter
+            "0012345678",  # Starts with 00
         ]
         for phone_number in invalid_phone_numbers:
             with self.assertRaises(click.BadParameter) as context:
                 validate_phone_number(phone_number)
-            self.assertEqual(str(context.exception), "The phone number is not a valid French number")
+            self.assertEqual(
+                str(context.exception), "The phone number is not a valid French number"
+            )

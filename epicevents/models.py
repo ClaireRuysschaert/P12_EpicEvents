@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -43,9 +44,16 @@ class StaffUser(Base):
     password = Column("password", String)
 
     def hash_password(self, password: str) -> None:
+        """
+        Hash the password using the argon2 algorithm.
+        """
         self.password = password_hasher.hash(password)
 
     def verify_password(self, session, email, password: str) -> bool:
+        """
+        Compare the stored hashed password and the password provided by the user
+        when logging in. If not the same, return False.
+        """
         staff = self.get_user_by_email(session, email)
         stored_password = staff.password
         try:
@@ -54,18 +62,30 @@ class StaffUser(Base):
             return False
 
     def check_password_needs_rehash(self) -> bool:
+        """
+        Check if the password needs to be rehashed.
+        """
         return password_hasher.check_needs_rehash(self.password)
 
     @staticmethod
-    def get_user_by_email(session: Session, email: str) -> "StaffUser":
+    def get_user_by_email(session: Session, email: str) -> Union["StaffUser", None]:
+        """
+        Fetch staff user by email and return it. If not found, return None.
+        """
         return session.query(StaffUser).filter(StaffUser.email == email).first()
 
     @staticmethod
-    def get_user_by_id(session: Session, staff_id: int) -> "StaffUser":
+    def get_user_by_id(session: Session, staff_id: int) -> Union["StaffUser", None]:
+        """
+        Fetch a staff user by its id and return it. If not found, return None.
+        """
         return session.query(StaffUser).filter(StaffUser.staff_id == staff_id).first()
 
     @staticmethod
     def get_all_staffusers(session: Session) -> list["StaffUser"]:
+        """
+        Fetch all staff users from the database.
+        """
         all_users = select(StaffUser).order_by(StaffUser.staff_id)
         return session.scalars(all_users)
 
@@ -116,29 +136,21 @@ class EpicUser(Base):
     assign_to = Column("assign_to", Integer, ForeignKey("staff_user.staff_id"))
 
     @staticmethod
-    def get_all_users(session: Session):
+    def get_all_users(session: Session) -> list["EpicUser"]:
+        """
+        Fetch all client users from the database.
+        """
         all_users = select(EpicUser).order_by(EpicUser.user_id)
         return session.scalars(all_users)
 
     @staticmethod
-    def get_epic_user_by_id(session: Session, user_id: int):
+    def get_epic_user_by_id(session: Session, user_id: int) -> Union["EpicUser", None]:
         """
-        Get epic user by id.
+        Fetch epic user by id and return it. If not found, return None.
         """
         return session.query(EpicUser).filter(EpicUser.user_id == user_id).first()
 
-    def assign_to_commercial_staff(self, session: Session, staff_id: int):
-        """
-        Assign the user to a commercial staff.
-        """
-        staff = session.query(StaffUser).filter(StaffUser.staff_id == staff_id).first()
-        if staff.department_id == 2:
-            self.assign_to = staff_id
-            session.commit()
-        else:
-            print("Staff is not commercial")
-
-    def assign_commercial_to_epic_user(client_id: int, commercial_contact: int):
+    def assign_commercial_to_epic_user(client_id: int, commercial_contact: int) -> None:
         """
         Assigns a commercial contact to a client.
         If the client does not have an assigned commercial when creating the contract,
@@ -148,13 +160,6 @@ class EpicUser(Base):
         user = EpicUser.get_epic_user_by_id(session, client_id)
         user.assign_to = commercial_contact
         session.commit()
-
-    def get_user_by_staff_id(self, session: Session, staff_id: int):
-        """
-        Get user by staff id.
-        """
-        user = session.query(EpicUser).filter(EpicUser.assign_to == staff_id).all()
-        return user
 
     def update(user_id: int, **kwargs) -> None:
         """
@@ -193,11 +198,19 @@ class EpicContract(Base):
 
     @staticmethod
     def get_all_contracts(session: Session) -> list["EpicContract"]:
+        """
+        Fetch all contracts from the database.
+        """
         all_contracts = select(EpicContract).order_by(EpicContract.contract_id)
         return session.scalars(all_contracts)
 
     @staticmethod
-    def get_contract_by_id(session: Session, contract_id: int) -> "EpicContract":
+    def get_contract_by_id(
+        session: Session, contract_id: int
+    ) -> Union["EpicContract", None]:
+        """
+        Fetch contract by id and return it. If not found, return None.
+        """
         contract = (
             session.query(EpicContract)
             .filter(EpicContract.contract_id == contract_id)
@@ -206,9 +219,11 @@ class EpicContract(Base):
         return contract
 
     @staticmethod
-    def get_contract_by_client_id(session: Session, client_id: int):
+    def get_contracts_by_client_id(
+        session: Session, client_id: int
+    ) -> list["EpicContract"]:
         """
-        Get contract by client id.
+        Fetch all contracts by client id from the database.
         """
         contract = (
             session.query(EpicContract)
@@ -218,19 +233,21 @@ class EpicContract(Base):
         return contract
 
     @staticmethod
-    def get_contract_with_due_amount(session: Session):
+    def get_contracts_with_due_amount(session: Session) -> list["EpicContract"]:
         """
-        Get contract with due amount.
+        Fetch all contracts with due amount > 0.
         """
-        contract = session.query(EpicContract).filter(EpicContract.amount_due > 0).all()
-        return contract
+        contracts = (
+            session.query(EpicContract).filter(EpicContract.amount_due > 0).all()
+        )
+        return contracts
 
     @staticmethod
-    def get_contract_by_staff_id(
+    def get_contracts_by_staff_id(
         session: Session, staff_id: int
     ) -> list["EpicContract"]:
         """
-        Get contract by staff id.
+        Fetch all staff contracts by staff id from the database.
         """
         contract = (
             session.query(EpicContract)
@@ -238,13 +255,6 @@ class EpicContract(Base):
             .all()
         )
         return contract
-
-    def get_client_infos(self, session: Session, client_id: int):
-        """
-        Get client infos by client id.
-        """
-        client = session.query(EpicUser).filter(EpicUser.user_id == client_id).first()
-        return client
 
     def update(contract_id: int, **kwargs) -> None:
         """
@@ -291,7 +301,7 @@ class EpicEvent(Base):
     notes = Column("notes", String)
 
     @staticmethod
-    def get_event_by_id(session: Session, id: int):
+    def get_event_by_id(session: Session, id: int) -> Union["EpicEvent", None]:
         """
         Get epic event by id.
         """
@@ -299,65 +309,18 @@ class EpicEvent(Base):
         return event
 
     @staticmethod
-    def get_client_name(self, session: Session, contract_id: int):
-        """
-        Get client name by contract id.
-        """
-        contract = (
-            session.query(EpicContract)
-            .filter(EpicContract.contract_id == contract_id)
-            .first()
-        )
-        if contract:
-            client_id = contract.client_id
-            client = (
-                session.query(EpicUser).filter(EpicUser.user_id == client_id).first()
-            )
-            if client:
-                return client.first_name, client.last_name
-        return None
-
-    def get_client_contact(self, session: Session, contract_id: int):
-        """
-        Get client contact by contract id.
-        """
-        contract = (
-            session.query(EpicContract)
-            .filter(EpicContract.contract_id == contract_id)
-            .first()
-        )
-        if contract:
-            client_id = contract.client_id
-            client = (
-                session.query(EpicUser).filter(EpicUser.user_id == client_id).first()
-            )
-            if client:
-                return client.email, client.phone
-        return None
-
-    def get_support_contact_name(self, session: Session, id: int):
-        """
-        Get support contact name by event id.
-        """
-        event = session.query(EpicEvent).filter(EpicEvent.id == id).first()
-        if event:
-            support_contact_id = event.support_contact
-            support_contact = (
-                session.query(StaffUser)
-                .filter(StaffUser.staff_id == support_contact_id)
-                .first()
-            )
-            if support_contact:
-                return support_contact.first_name, support_contact.last_name
-        return None
-
-    @staticmethod
     def get_all_events(session: Session) -> list["EpicEvent"]:
+        """
+        Fetch all events from the database.
+        """
         all_events = select(EpicEvent).order_by(EpicEvent.id)
         return session.scalars(all_events)
 
     @staticmethod
     def get_all_staff_events(session: Session, staff_id: int) -> list["EpicEvent"]:
+        """
+        Fetch all staff events by staff id from the database.
+        """
         all_staff_events = select(EpicEvent).filter(
             EpicEvent.support_contact == staff_id
         )

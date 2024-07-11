@@ -1,7 +1,7 @@
 import click
 
 
-def display_permission_error():
+def display_permission_error() -> str:
     """
     Display permission error message.
     """
@@ -10,7 +10,7 @@ def display_permission_error():
     return error_message
 
 
-def display_contract_update_error():
+def display_contract_update_error() -> str:
     """
     Display contract update error message.
     """
@@ -22,7 +22,7 @@ def display_contract_update_error():
     return error_message
 
 
-def display_epic_user_not_found_error():
+def display_epic_user_not_found_error() -> str:
     """
     Display epic user not found error message.
     """
@@ -31,7 +31,7 @@ def display_epic_user_not_found_error():
     return error_message
 
 
-def display_staff_not_commercial_contact_error():
+def display_staff_not_commercial_contact_error() -> str:
     """
     Display staff not commercial contact error message.
     """

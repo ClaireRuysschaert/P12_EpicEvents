@@ -3,3 +3,4 @@ __pycache__/
 .flake8
 alembic.ini
 .env
+.coverage

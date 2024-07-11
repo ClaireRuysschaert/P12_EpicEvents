@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Union
 
 from constants import DEPARTMENTS_BY_ID
 from utils import get_session
@@ -6,7 +6,15 @@ from utils import get_session
 from ..models import StaffUser
 
 
-def authenticate_user(email: str, password: str) -> Optional[StaffUser]:
+def authenticate_user(email: str, password: str) -> Union[StaffUser, None]:
+    """
+    Authenticate the user with the given email and password.
+    Verifies the hashed password stored in the database with the given password,
+    checks if the password needs rehashing, and rehashes the password if needed.
+
+    If the user is found and the password is correct, return the user.
+    Otherwise, return False.
+    """
     _, session = get_session()
     user: StaffUser = StaffUser.get_user_by_email(session, email)
 
@@ -22,6 +30,9 @@ def authenticate_user(email: str, password: str) -> Optional[StaffUser]:
 def create_staff_users(
     first_name: str, last_name: str, email: str, password: str, department: str
 ) -> StaffUser:
+    """
+    Create a new staff user in the database.
+    """
     _, session = get_session()
     department_id = DEPARTMENTS_BY_ID[department]
     new_user = StaffUser(
@@ -37,16 +48,21 @@ def create_staff_users(
     return new_user
 
 
-def is_staff_exists(staff_id: int) -> StaffUser:
+def is_staff_exists(staff_id: int) -> Union[StaffUser, None]:
+    """
+    Verifies if the staff exists in the database by its id. If not found, return None.
+    """
     _, session = get_session()
     staff: StaffUser = StaffUser.get_user_by_id(session, staff_id)
     if staff:
         return staff
-    else:
-        return None
+    return None
 
 
 def get_all_staff_users() -> list[StaffUser]:
+    """
+    Fetch all staff users from the database
+    """
     _, session = get_session()
     all_users = StaffUser.get_all_staffusers(session)
     return all_users

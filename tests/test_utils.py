@@ -2,6 +2,7 @@ import unittest
 from constants import DEPARTMENTS_BY_ID
 from utils import is_management_team, is_commercial_team, is_support_team
 
+
 class UtilsTestCase(unittest.TestCase):
     def setUp(self):
         self.management_id = DEPARTMENTS_BY_ID["management"]

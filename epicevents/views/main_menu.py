@@ -14,6 +14,10 @@ from validators import validate_email  # noqa
 
 
 def get_department_id_by_asking_login() -> int:
+    """
+    Login staff user.
+    Verify the email and password, and return the department_id and staff_id.
+    """
     click.echo("Please login")
     user_login = False
     while user_login is False:
@@ -32,8 +36,11 @@ def get_department_id_by_asking_login() -> int:
     return department_id, staff_id
 
 
-def main_menu(department_id: int = None, staff_id: int = None):
-
+def main_menu(department_id: int = None, staff_id: int = None) -> None:
+    """
+    Display main menu, login and redirect to the desired submenu.
+    Can redirect to the staff, contracts, events, or client submenu.
+    """
     # Login
     if department_id is None:
         click.echo("\nWelcome to the dashboard!\n")

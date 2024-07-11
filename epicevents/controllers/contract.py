@@ -12,6 +12,9 @@ def create_contract(
     status: str,
     commercial_contact: int,
 ) -> EpicContract:
+    """
+    Create a new contract in the database.
+    """
     _, session = get_session()
     new_contract = EpicContract(
         client_id=client_id,
@@ -26,6 +29,9 @@ def create_contract(
 
 
 def get_all_contracts() -> Union[list[EpicContract], None]:
+    """
+    Fetch all contracts from the database.
+    """
     _, session = get_session()
     contracts = EpicContract.get_all_contracts(session)
     if contracts:
@@ -33,17 +39,23 @@ def get_all_contracts() -> Union[list[EpicContract], None]:
     return None
 
 
-def get_contract_by_staff_id(staff_id: int) -> Union[list[EpicContract], None]:
+def get_contracts_by_staff_id(staff_id: int) -> Union[list[EpicContract], None]:
+    """
+    Fetch the contract by the staff id, if exists. If not, return None.
+    """
     _, session = get_session()
-    contract: EpicContract = EpicContract.get_contract_by_staff_id(session, staff_id)
+    contract: EpicContract = EpicContract.get_contracts_by_staff_id(session, staff_id)
     if contract:
         return contract
     return None
 
 
 def get_contract_by_user_id(user_id: int) -> Union[list[EpicContract], None]:
+    """
+    Fetch the contract by the user id, if exists. If not, return None.
+    """
     _, session = get_session()
-    contract: EpicContract = EpicContract.get_contract_by_client_id(
+    contract: EpicContract = EpicContract.get_contracts_by_client_id(
         session, client_id=user_id
     )
     if contract:
@@ -51,15 +63,21 @@ def get_contract_by_user_id(user_id: int) -> Union[list[EpicContract], None]:
     return None
 
 
-def get_contract_with_due_amount() -> Union[list[EpicContract], None]:
+def get_contracts_with_due_amount() -> Union[list[EpicContract], None]:
+    """
+    Fetch all contracts with due amount.
+    """
     _, session = get_session()
-    contract: EpicContract = EpicContract.get_contract_with_due_amount(session)
-    if contract:
-        return contract
+    contracts: EpicContract = EpicContract.get_contracts_with_due_amount(session)
+    if contracts:
+        return contracts
     return None
 
 
 def is_contract_exists(contract_id: int) -> Union[list[EpicContract], None]:
+    """
+    Verifies if the contract exists in the database.
+    """
     _, session = get_session()
     contract: EpicContract = EpicContract.get_contract_by_id(session, contract_id)
     if contract:

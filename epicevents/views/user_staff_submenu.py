@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from typing import Union
 
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
@@ -21,7 +22,10 @@ from validators import validate_email  # noqa
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def display_all_staff_users_table(department_id: int):
+def display_all_staff_users_table(department_id: int) -> None:
+    """
+    Display a table with all staff users.
+    """
     users = get_all_staff_users()
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
@@ -69,7 +73,13 @@ def display_created_staff_user(department_id: int) -> None:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
+def get_user_staff_by_asking_id(
+    action: str, department_id: int
+) -> Union[StaffUser, None]:
+    """
+    Verify if the staff exists in the database by its id and return it.
+    If not, return None.
+    """
     click.echo(f"Please enter the staff id to {action}")
     staff_id = click.prompt("Enter the staff id", type=int)
     staff = is_staff_exists(staff_id)
@@ -78,6 +88,9 @@ def get_user_staff_by_asking_id(action: str, department_id: int) -> StaffUser:
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
 def display_staff_user(staff: StaffUser, department_id: int) -> None:
+    """
+    Display a table with the staff user information.
+    """
     data = []
     headers = ["Staff ID", "First Name", "Last Name", "Email", "Department ID"]
     data.append(
@@ -97,7 +110,7 @@ def display_staff_user(staff: StaffUser, department_id: int) -> None:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def display_update_staff_user_menu(staff: StaffUser, department_id: int):
+def display_update_staff_user_menu(staff: StaffUser, department_id: int) -> None:
     """
     Displays a menu for updating staff user information.
     """
@@ -129,7 +142,10 @@ def display_update_staff_user_menu(staff: StaffUser, department_id: int):
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def display_staff_user_to_delete(staff: StaffUser, department_id: int):
+def display_staff_user_to_delete(staff: StaffUser, department_id: int) -> None:
+    """
+    Display the staff user to delete and ask for confirmation.
+    """
     click.echo("\nStaff user to delete")
     display_staff_user(staff, department_id=department_id)
     confirm = click.prompt("Press enter to confirm deletion", type=str, default="")
@@ -141,7 +157,10 @@ def display_staff_user_to_delete(staff: StaffUser, department_id: int):
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def staff_user_menu(department_id: int):
+def staff_user_menu(department_id: int) -> None:
+    """
+    Display CRUD operations for staff users.
+    """
     while True:
         click.secho("Staff user menu\n", bold=True)
         click.echo("1. See all staff users")

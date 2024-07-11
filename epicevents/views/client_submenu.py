@@ -21,7 +21,10 @@ from epicevents.models import EpicUser  # noqa
 from validators import validate_email, validate_phone_number  # noqa
 
 
-def display_all_clients_table(department_id: int):
+def display_all_clients_table(department_id: int) -> None:
+    """
+    Display a table with all clients.
+    """
     users = get_all_users()
     data = []
     headers = [
@@ -84,12 +87,19 @@ def display_created_client(department_id: int, staff_id: int) -> None:
 
 
 def get_user_by_asking_id(department_id: int) -> Union[EpicUser, None]:
+    """
+    Fetch the user by asking the user ID, and return the user if found.
+    Otherwise, return None.
+    """
     user_id = click.prompt("Please enter the user ID to update", type=int)
     user = is_client_exists(user_id)
     return user
 
 
 def display_client(user: EpicUser, department_id: int) -> None:
+    """
+    Display the client information in a table.
+    """
     data = []
     headers = [
         "User ID",
@@ -118,7 +128,7 @@ def display_client(user: EpicUser, department_id: int) -> None:
     click.echo("\n")
 
 
-def display_update_user_menu(user: EpicUser, department_id: int):
+def display_update_user_menu(user: EpicUser, department_id: int) -> None:
     """
     Display a menu for updating client information.
     """
@@ -153,7 +163,10 @@ def display_update_user_menu(user: EpicUser, department_id: int):
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
-def client_menu(department_id: int, staff_id: int):
+def client_menu(department_id: int, staff_id: int) -> None:
+    """
+    Display a menu for managing clients.
+    """
     while True:
         click.secho("\nClient menu\n", bold=True)
         click.echo("1. See all clients")

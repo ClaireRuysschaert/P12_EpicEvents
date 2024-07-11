@@ -14,9 +14,9 @@ from constants import DEPARTMENTS_BY_ID  # noqa
 from epicevents.controllers.contract import (  # noqa
     create_contract,
     get_all_contracts,
-    get_contract_by_staff_id,
     get_contract_by_user_id,
-    get_contract_with_due_amount,
+    get_contracts_by_staff_id,
+    get_contracts_with_due_amount,
     is_contract_exists,
 )
 from epicevents.controllers.epic_user import (  # noqa
@@ -39,6 +39,10 @@ from validators import (  # noqa
 
 
 def get_client_id_by_asking_id() -> Union[int, None]:
+    """
+    Verify that the client exists in the database byu asking a commercial user
+    for the client id.
+    """
     if DEPARTMENTS_BY_ID["commercial"]:
         click.echo("Please enter the client id")
         user_id = click.prompt("Enter the client id", type=int)
@@ -57,7 +61,10 @@ def get_client_id_by_asking_id() -> Union[int, None]:
 )
 def display_all_contracts_table(
     department_id: int,
-):
+) -> None:
+    """
+    Display a table with all contracts.
+    """
     contracts = get_all_contracts()
     data = []
     headers = [
@@ -95,14 +102,17 @@ def display_contracts_by_filters_table(
     staff_id: int = None,
     user_id: int = None,
     filter_name: str = None,
-):
-
+) -> None:
+    """
+    Display a table with contracts based on filters
+    (staff id, user id, amount due or status to_sign).
+    """
     if staff_id:
-        contracts = get_contract_by_staff_id(staff_id=staff_id)
+        contracts = get_contracts_by_staff_id(staff_id=staff_id)
     elif user_id:
         contracts = get_contract_by_user_id(user_id=user_id)
     elif filter_name == "amount due":
-        contracts = get_contract_with_due_amount()
+        contracts = get_contracts_with_due_amount()
     elif filter_name == "to sign":
         contracts = get_all_contracts()
         contracts = [contract for contract in contracts if contract.status == "To sign"]
@@ -135,9 +145,12 @@ def display_contracts_by_filters_table(
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
-def epic_contracts_filtered_menu(department_id: int, staff_id: int):
+def epic_contracts_filtered_menu(department_id: int, staff_id: int) -> None:
     """
-    Display contracts based on filters.
+    Display contracts based on filters :
+    - Assigned contracts
+    - Contracts of a client
+    - Contracts by amount due or signing status
     """
     from epicevents.views.main_menu import main_menu
 
@@ -195,7 +208,10 @@ def epic_contracts_filtered_menu(department_id: int, staff_id: int):
         DEPARTMENTS_BY_ID["commercial"],
     ]
 )
-def display_contract(contract: EpicContract, department_id: int):
+def display_contract(contract: EpicContract, department_id: int) -> None:
+    """
+    Display the contract information in a table.
+    """
     data = []
     headers = [
         "Contract ID",
@@ -223,7 +239,7 @@ def display_contract(contract: EpicContract, department_id: int):
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def display_contract_creation(department_id: int):
+def display_contract_creation(department_id: int) -> None:
     """
     Create and display information about a contract.
     """
@@ -269,7 +285,7 @@ def display_contract_creation(department_id: int):
         DEPARTMENTS_BY_ID["commercial"],
     ]
 )
-def display_update_contract_menu(contract: EpicContract, department_id: int):
+def display_update_contract_menu(contract: EpicContract, department_id: int) -> None:
     """
     Display a menu for updating contract information.
     """
@@ -327,6 +343,10 @@ def display_update_contract_menu(contract: EpicContract, department_id: int):
     ]
 )
 def get_contract_by_asking_id(department_id: int) -> Union[EpicContract, None]:
+    """
+    Fetch the contract by asking the user for the contract id if it exists.
+    If not, return None.
+    """
     click.echo("Please enter the contract id to update")
     contract_id = click.prompt("Enter the contract id", type=int)
     contract = is_contract_exists(contract_id)
@@ -339,7 +359,7 @@ def get_contract_by_asking_id(department_id: int) -> Union[EpicContract, None]:
         DEPARTMENTS_BY_ID["commercial"],
     ]
 )
-def epic_contracts_menu(department_id: int, staff_id: int):
+def epic_contracts_menu(department_id: int, staff_id: int) -> None:
     """
     CRU operations for contracts.
     Users can not delete contracts.
