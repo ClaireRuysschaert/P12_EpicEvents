@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime, timezone
 import os
-from typing import Union, Tuple
+from typing import Tuple
 import click
 from dotenv import load_dotenv
 import jwt
@@ -15,6 +15,7 @@ postgresql = {
     "pgport": os.getenv('PGPORT'),
     "pgdb": os.getenv('PGDATABASE'),
 }
+
 
 def generate_jwt_token(user_login) -> str:
     """
@@ -32,6 +33,7 @@ def generate_jwt_token(user_login) -> str:
     token = jwt.encode(payload, secret, algorithm)
     return token
 
+
 def decode_jwt_token(token) -> Tuple[int, int, datetime]:
     """
     Decode the JWT token and return the user_id and department_id.
@@ -41,6 +43,7 @@ def decode_jwt_token(token) -> Tuple[int, int, datetime]:
     user_id = jwt.decode(token, secret, algorithm)['user_id']
     department_id = jwt.decode(token, secret, algorithm)['department_id']
     return user_id, department_id
+
 
 def is_jwt_token_valid(token: str) -> bool:
     """

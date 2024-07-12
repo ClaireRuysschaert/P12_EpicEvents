@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from typing import Union
 
+from utils import get_session
+
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
 project_path = str(Path(__file__).parent.parent.parent)
@@ -64,12 +66,16 @@ def display_created_staff_user(department_id: int) -> None:
         ),
     )
 
-    create_staff_users(first_name, last_name, email, password, department)
+    new_user = create_staff_users(first_name, last_name, email, password, department)
+    _, session = get_session()
+    session.add(new_user)
+    session.commit()
     click.echo(click.style("\nUser created successfully:", fg="green", bold=True))
-    click.echo(click.style(f"First Name: {first_name}", fg="blue"))
-    click.echo(click.style(f"Last Name: {last_name}", fg="blue"))
-    click.echo(click.style(f"Email: {email}", fg="blue"))
-    click.echo(click.style(f"Department: {department}\n", fg="blue"))
+    click.echo(click.style(f"User ID: {new_user.staff_id}", fg="blue"))
+    click.echo(click.style(f"First Name: {new_user.first_name}", fg="blue"))
+    click.echo(click.style(f"Last Name: {new_user.last_name}", fg="blue"))
+    click.echo(click.style(f"Email: {new_user.email}", fg="blue"))
+    click.echo(click.style(f"Department: {new_user.department_id}\n", fg="blue"))
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])

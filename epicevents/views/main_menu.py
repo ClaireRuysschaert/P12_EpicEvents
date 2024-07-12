@@ -10,7 +10,11 @@ sys.path.insert(0, project_path)
 import click  # noqa
 
 from epicevents.controllers.staff_user import authenticate_user  # noqa
-from local_settings import generate_jwt_token, decode_jwt_token, is_jwt_token_valid  # noqa
+from local_settings import (  # noqa
+    decode_jwt_token,
+    generate_jwt_token,
+    is_jwt_token_valid,
+)
 from validators import validate_email  # noqa
 
 
@@ -36,16 +40,18 @@ def get_token_by_asking_login() -> int:
     return token
 
 
-def main_menu(department_id: int = None, staff_id: int = None, token: str = None) -> None:
+def main_menu(
+    department_id: int = None, staff_id: int = None, token: str = None
+) -> None:
     """
     Display main menu, login and redirect to the desired submenu.
     Can redirect to the staff, contracts, events, or client submenu.
     """
-    
+
     if token is None or not is_jwt_token_valid(token):
         click.echo("\nWelcome to the dashboard!\n")
         token = get_token_by_asking_login()
-        
+
     user_id_token, department_id_token = decode_jwt_token(token)
 
     while True:
@@ -68,17 +74,23 @@ def main_menu(department_id: int = None, staff_id: int = None, token: str = None
         elif choice == 2:
             from epicevents.views.contracts_submenu import epic_contracts_menu
 
-            epic_contracts_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
+            epic_contracts_menu(
+                department_id=department_id_token, staff_id=user_id_token, token=token
+            )
 
         elif choice == 3:
             from epicevents.views.events_submenu import epic_events_menu
 
-            epic_events_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
+            epic_events_menu(
+                department_id=department_id_token, staff_id=user_id_token, token=token
+            )
 
         elif choice == 4:
             from epicevents.views.client_submenu import client_menu
 
-            client_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
+            client_menu(
+                department_id=department_id_token, staff_id=user_id_token, token=token
+            )
 
         elif choice == 5:
             sys.exit(0)

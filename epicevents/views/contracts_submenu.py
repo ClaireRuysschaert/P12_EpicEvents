@@ -145,7 +145,9 @@ def display_contracts_by_filters_table(
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
-def epic_contracts_filtered_menu(department_id: int, staff_id: int, token: str = None) -> None:
+def epic_contracts_filtered_menu(
+    department_id: int, staff_id: int, token: str = None
+) -> None:
     """
     Display contracts based on filters :
     - Assigned contracts

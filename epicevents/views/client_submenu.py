@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from typing import Union
 
+from utils import get_session
+
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
 project_path = str(Path(__file__).parent.parent.parent)
@@ -69,7 +71,7 @@ def display_created_client(department_id: int, staff_id: int) -> None:
     last_name = click.prompt("Enter client last name", type=str).capitalize()
     company = click.prompt("Enter client company", type=str)
     assign_to = staff_id
-    create_user(
+    new_user = create_user(
         first_name,
         last_name,
         email=email,
@@ -77,13 +79,17 @@ def display_created_client(department_id: int, staff_id: int) -> None:
         company=company,
         assign_to=assign_to,
     )
+    _, session = get_session()
+    session.add(new_user)
+    session.commit()
     click.echo(click.style("\nUser created successfully:", fg="green", bold=True))
-    click.echo(click.style(f"First Name: {first_name}", fg="blue"))
-    click.echo(click.style(f"Last Name: {last_name}", fg="blue"))
-    click.echo(click.style(f"Email: {email}", fg="blue"))
-    click.echo(click.style(f"Department: {phone}", fg="blue"))
-    click.echo(click.style(f"Company: {company}", fg="blue"))
-    click.echo(click.style(f"Assign To: {assign_to}", fg="blue"))
+    click.echo(click.style(f"User ID: {new_user.user_id}", fg="blue"))
+    click.echo(click.style(f"First Name: {new_user.first_name}", fg="blue"))
+    click.echo(click.style(f"Last Name: {new_user.last_name}", fg="blue"))
+    click.echo(click.style(f"Email: {new_user.email}", fg="blue"))
+    click.echo(click.style(f"Department: {new_user.phone}", fg="blue"))
+    click.echo(click.style(f"Company: {new_user.company}", fg="blue"))
+    click.echo(click.style(f"Assign To: {new_user.assign_to}", fg="blue"))
 
 
 def get_user_by_asking_id(department_id: int) -> Union[EpicUser, None]:
