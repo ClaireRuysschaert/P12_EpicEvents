@@ -5,6 +5,7 @@ import click
 from dotenv import load_dotenv
 import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import sentry_sdk
 
 load_dotenv()
 
@@ -61,3 +62,10 @@ def is_jwt_token_valid(token: str) -> bool:
     except InvalidTokenError:
         click.echo("Invalid token. Please log in again.")
         return False
+
+
+sentry_sdk.init(
+    dsn = os.getenv('SENTRY_DSN'),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)

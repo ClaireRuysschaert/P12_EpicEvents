@@ -52,7 +52,7 @@ def main_menu(
         click.echo("\nWelcome to the dashboard!\n")
         token = get_token_by_asking_login()
 
-    user_id_token, department_id_token = decode_jwt_token(token)
+    staff_id, department_id = decode_jwt_token(token)
 
     while True:
         # Menu
@@ -69,28 +69,26 @@ def main_menu(
         if choice == 1:
             from epicevents.views.user_staff_submenu import staff_user_menu
 
-            staff_user_menu(department_id=department_id_token, token=token)
+            staff_user_menu(department_id=department_id, token=token)
 
         elif choice == 2:
             from epicevents.views.contracts_submenu import epic_contracts_menu
 
             epic_contracts_menu(
-                department_id=department_id_token, staff_id=user_id_token, token=token
+                department_id=department_id, staff_id=staff_id, token=token
             )
 
         elif choice == 3:
             from epicevents.views.events_submenu import epic_events_menu
 
             epic_events_menu(
-                department_id=department_id_token, staff_id=user_id_token, token=token
+                department_id=department_id, staff_id=staff_id, token=token
             )
 
         elif choice == 4:
             from epicevents.views.client_submenu import client_menu
 
-            client_menu(
-                department_id=department_id_token, staff_id=user_id_token, token=token
-            )
+            client_menu(department_id=department_id, staff_id=staff_id, token=token)
 
         elif choice == 5:
             sys.exit(0)
