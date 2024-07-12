@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from typing import Union
 
+import sentry_sdk
+
 from utils import get_session
 
 # Adds the project path to the system's path. This allows
@@ -70,6 +72,9 @@ def display_created_staff_user(department_id: int) -> None:
     _, session = get_session()
     session.add(new_user)
     session.commit()
+    
+    sentry_sdk.capture_message(f"New staff user created: {new_user.staff_id}")
+    
     click.echo(click.style("\nUser created successfully:", fg="green", bold=True))
     click.echo(click.style(f"User ID: {new_user.staff_id}", fg="blue"))
     click.echo(click.style(f"First Name: {new_user.first_name}", fg="blue"))
@@ -130,15 +135,19 @@ def display_update_staff_user_menu(staff: StaffUser, department_id: int) -> None
     to_update = click.prompt("Enter your choice", type=int)
     if to_update == 1:
         first_name = click.prompt("Enter the new first name").capitalize()
+        sentry_sdk.capture_message(f"Staff user ({staff.staff_id}) first name updated: {first_name}")
         StaffUser.update(staff.staff_id, first_name=first_name)
     elif to_update == 2:
         last_name = click.prompt("Enter the new last name").capitalize()
+        sentry_sdk.capture_message(f"Staff user ({staff.staff_id}) last name updated: {last_name}")
         StaffUser.update(staff.staff_id, last_name=last_name)
     elif to_update == 3:
         email = click.prompt("Enter the new email")
+        sentry_sdk.capture_message(f"Staff user ({staff.staff_id}) email updated: {email}")
         StaffUser.update(staff.staff_id, email=email)
     elif to_update == 4:
         new_department_id = click.prompt("Enter the new department id", type=int)
+        sentry_sdk.capture_message(f"Staff user ({staff.staff_id}) department id updated: {new_department_id}")
         StaffUser.update(staff.staff_id, department_id=new_department_id)
     elif to_update == 5:
         click.echo("Update canceled")

@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from typing import Union
 
+import sentry_sdk
+
 # Adds the project path to the system's path. This allows
 # to import modules from the project.
 project_path = str(Path(__file__).parent.parent.parent)
@@ -323,6 +325,9 @@ def display_update_contract_menu(contract: EpicContract, department_id: int) -> 
             "Enter the new status",
             type=click.Choice(["To sign", "Signed", "Cancelled"], case_sensitive=False),
         )
+        if status == "Signed":
+            sentry_sdk.capture_message(f"Contract {contract.contract_id} has been signed")
+        
         EpicContract.update(contract.contract_id, status=status)
     elif to_update == 5:
         commercial_contact = click.prompt(
