@@ -157,7 +157,7 @@ def display_staff_user_to_delete(staff: StaffUser, department_id: int) -> None:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["management"]])
-def staff_user_menu(department_id: int) -> None:
+def staff_user_menu(department_id: int, token: str = None) -> None:
     """
     Display CRUD operations for staff users.
     """
@@ -199,7 +199,7 @@ def staff_user_menu(department_id: int) -> None:
         elif choice == 5:
             from epicevents.views.main_menu import main_menu
 
-            main_menu(department_id=department_id)
+            main_menu(department_id=department_id, token=token)
 
         # Exit
         elif choice == 6:
@@ -207,4 +207,4 @@ def staff_user_menu(department_id: int) -> None:
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu(department_id=department_id)
+            main_menu(department_id=department_id, token=token)

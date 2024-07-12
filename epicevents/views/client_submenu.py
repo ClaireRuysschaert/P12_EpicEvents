@@ -163,7 +163,7 @@ def display_update_user_menu(user: EpicUser, department_id: int) -> None:
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
-def client_menu(department_id: int, staff_id: int) -> None:
+def client_menu(department_id: int, staff_id: int, token: str = None) -> None:
     """
     Display a menu for managing clients.
     """
@@ -195,6 +195,6 @@ def client_menu(department_id: int, staff_id: int) -> None:
         elif choice == 4:
             from epicevents.views.main_menu import main_menu
 
-            main_menu(department_id=department_id)
+            main_menu(department_id=department_id, token=token)
         elif choice == 5:
             sys.exit(0)

@@ -145,7 +145,7 @@ def display_contracts_by_filters_table(
 
 
 @has_permission(departments_allowed=[DEPARTMENTS_BY_ID["commercial"]])
-def epic_contracts_filtered_menu(department_id: int, staff_id: int) -> None:
+def epic_contracts_filtered_menu(department_id: int, staff_id: int, token: str = None) -> None:
     """
     Display contracts based on filters :
     - Assigned contracts
@@ -176,7 +176,7 @@ def epic_contracts_filtered_menu(department_id: int, staff_id: int) -> None:
                     department_id=department_id, user_id=user_id
                 )
             else:
-                main_menu(department_id=department_id, staff_id=staff_id)
+                main_menu(department_id=department_id, staff_id=staff_id, token=token)
 
         elif choice == 3:
             click.secho(
@@ -188,18 +188,18 @@ def epic_contracts_filtered_menu(department_id: int, staff_id: int) -> None:
                 type=click.Choice(["amount due", "to sign"], case_sensitive=False),
             )
             display_contracts_by_filters_table(
-                department_id=department_id, filter_name=filter_name
+                department_id=department_id, filter_name=filter_name, token=token
             )
 
         elif choice == 4:
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)
 
         elif choice == 5:
             sys.exit(0)
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)
 
 
 @has_permission(
@@ -359,7 +359,7 @@ def get_contract_by_asking_id(department_id: int) -> Union[EpicContract, None]:
         DEPARTMENTS_BY_ID["commercial"],
     ]
 )
-def epic_contracts_menu(department_id: int, staff_id: int) -> None:
+def epic_contracts_menu(department_id: int, staff_id: int, token: str = None) -> None:
     """
     CRU operations for contracts.
     Users can not delete contracts.
@@ -404,11 +404,11 @@ def epic_contracts_menu(department_id: int, staff_id: int) -> None:
                 click.secho("\nContract not found", fg="red")
 
         elif choice == 5:
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)
 
         elif choice == 6:
             sys.exit(0)
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)

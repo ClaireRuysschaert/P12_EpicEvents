@@ -324,7 +324,7 @@ def event_update(department_id: int, staff_id: int) -> None:
     display_all_events_table(department_id=department_id)
 
 
-def epic_events_menu(department_id: int, staff_id: int) -> None:
+def epic_events_menu(department_id: int, staff_id: int, token: str = None) -> None:
     """
     CRU operations for events.
     Users can not delete events.
@@ -345,7 +345,7 @@ def epic_events_menu(department_id: int, staff_id: int) -> None:
             event_update(department_id=department_id, staff_id=staff_id)
 
         elif choice == 4:
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)
 
         elif choice == 5:
             sys.exit(0)
@@ -360,4 +360,4 @@ def epic_events_menu(department_id: int, staff_id: int) -> None:
 
         else:
             click.secho("Invalid choice", fg="red")
-            main_menu(department_id=department_id, staff_id=staff_id)
+            main_menu(department_id=department_id, staff_id=staff_id, token=token)

@@ -10,13 +10,14 @@ sys.path.insert(0, project_path)
 import click  # noqa
 
 from epicevents.controllers.staff_user import authenticate_user  # noqa
+from local_settings import generate_jwt_token, decode_jwt_token, is_jwt_token_valid  # noqa
 from validators import validate_email  # noqa
 
 
-def get_department_id_by_asking_login() -> int:
+def get_token_by_asking_login() -> int:
     """
     Login staff user.
-    Verify the email and password, and return the department_id and staff_id.
+    Verify the email and password, and return the json web token.
     """
     click.echo("Please login")
     user_login = False
@@ -27,26 +28,25 @@ def get_department_id_by_asking_login() -> int:
         if user_login is False:
             click.echo("Invalid email or password, please try again.")
     click.echo(
-        "Welcome "
+        "\n\n\nWelcome "
         + click.style(user_login.first_name + " " + user_login.last_name, fg="blue")
-        + " !"
+        + " !\n\n\n"
     )
-    department_id = user_login.department_id
-    staff_id = user_login.staff_id
-    return department_id, staff_id
+    token = generate_jwt_token(user_login)
+    return token
 
 
-def main_menu(department_id: int = None, staff_id: int = None) -> None:
+def main_menu(department_id: int = None, staff_id: int = None, token: str = None) -> None:
     """
     Display main menu, login and redirect to the desired submenu.
     Can redirect to the staff, contracts, events, or client submenu.
     """
-    # Login
-    if department_id is None:
+    
+    if token is None or not is_jwt_token_valid(token):
         click.echo("\nWelcome to the dashboard!\n")
-        department_id, staff_id = get_department_id_by_asking_login()
-    else:
-        pass
+        token = get_token_by_asking_login()
+        
+    user_id_token, department_id_token = decode_jwt_token(token)
 
     while True:
         # Menu
@@ -63,22 +63,22 @@ def main_menu(department_id: int = None, staff_id: int = None) -> None:
         if choice == 1:
             from epicevents.views.user_staff_submenu import staff_user_menu
 
-            staff_user_menu(department_id=department_id)
+            staff_user_menu(department_id=department_id_token, token=token)
 
         elif choice == 2:
             from epicevents.views.contracts_submenu import epic_contracts_menu
 
-            epic_contracts_menu(department_id=department_id, staff_id=staff_id)
+            epic_contracts_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
 
         elif choice == 3:
             from epicevents.views.events_submenu import epic_events_menu
 
-            epic_events_menu(department_id=department_id, staff_id=staff_id)
+            epic_events_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
 
         elif choice == 4:
             from epicevents.views.client_submenu import client_menu
 
-            client_menu(department_id=department_id, staff_id=staff_id)
+            client_menu(department_id=department_id_token, staff_id=user_id_token, token=token)
 
         elif choice == 5:
             sys.exit(0)
