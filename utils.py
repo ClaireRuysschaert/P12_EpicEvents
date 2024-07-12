@@ -3,6 +3,8 @@ from constants import DEPARTMENTS_BY_ID
 from local_settings import postgresql as settings
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import declarative_base
+
 from sqlalchemy.orm import sessionmaker
 
 
@@ -21,8 +23,8 @@ def get_engine_from_settings() -> Engine:
     """
     Get the engine for the database from the settings.
     """
-    keys = ["pguser", "pgpasswd", "pghost", "pgport", "pgdb"]
-    if not all(key in keys for key in settings.keys()):
+    required_keys = ["pguser", "pgpasswd", "pghost", "pgport", "pgdb"]
+    if not all(key in required_keys for key in settings.keys()):
         raise Exception("Bad config file")
 
     return get_engine(
@@ -34,11 +36,22 @@ def get_engine_from_settings() -> Engine:
     )
 
 
+Base = declarative_base()
+
+
+def create_tables(engine: Engine) -> None:
+    """
+    Create the tables in the database.
+    """
+    Base.metadata.create_all(engine)
+
+
 def get_session() -> tuple[Engine, sessionmaker]:
     """
     Get the session for the database.
     """
     engine = get_engine_from_settings()
+    create_tables(engine)
     session = sessionmaker(bind=engine)()
     return engine, session
 
