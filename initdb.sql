@@ -1,3 +1,6 @@
+CREATE DATABASE epic_events_db;
+\c epic_events_db;
+
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE
@@ -46,3 +49,21 @@ CREATE TABLE epic_event (
     attendees INTEGER,
     notes TEXT
 );
+
+INSERT INTO departments (name) VALUES ('Management'), ('Support'), ('Commercial');
+
+INSERT INTO staff_user (first_name, last_name, email, department_id, password) VALUES
+('John', 'Doe', 'john.doe@example.com', 2, 'password123'),
+('Jane', 'Smith', 'jane.smith@example.com', 3, 'password456');
+
+INSERT INTO epic_user (first_name, last_name, email, phone, company, assign_to) VALUES
+('Alice', 'Johnson', 'alice.johnson@example.com', '0666666666', 'Company A', 2),
+('Bob', 'Brown', 'bob.brown@example.com', '0777777777', 'Company B', 2);
+
+INSERT INTO epic_contract (client_id, total_amount, amount_due, status, commercial_contact) VALUES
+(1, 1000.00, 500.00, 'To sign', 2),
+(2, 2000.00, 1500.00, 'Signed', 2);
+
+INSERT INTO epic_event (contract, start_date, end_date, support_contact, location, attendees, notes) VALUES
+(1, '2023-10-01 10:00:00', '2024-10-01 12:00:00', 2, 'Location A', 50, 'Event notes for contract 1'),
+(2, '2023-11-01 14:00:00', '2024-11-01 16:00:00', 2, 'Location B', 100, 'Event notes for contract 2');
