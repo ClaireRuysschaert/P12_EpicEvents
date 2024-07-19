@@ -104,6 +104,7 @@ def display_contracts_by_filters_table(
     staff_id: int = None,
     user_id: int = None,
     filter_name: str = None,
+    token: str = None
 ) -> None:
     """
     Display a table with contracts based on filters
