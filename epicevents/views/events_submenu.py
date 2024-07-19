@@ -279,13 +279,13 @@ def display_events_creation(department_id: int, staff_id: int) -> None:
 
 
 def update_event_permission_check(
-    event: EpicEvent, is_support_team: bool, staff_id: int, department_id: int
+    event: EpicEvent, staff_id: int, department_id: int
 ) -> None:
     """
     Check permsssion to update an event. Support team can only update their
     assigned events.
     """
-    if is_support_team and event.support_contact != staff_id:
+    if is_support_team(department_id) and event.support_contact != staff_id:
         click.secho("\nYou are not the support contact of the event\n", fg="red")
         epic_events_menu(department_id=department_id, staff_id=staff_id)
     return None
@@ -318,7 +318,8 @@ def event_update(department_id: int, staff_id: int) -> None:
     event = fetch_event_or_notify_failure(
         department_id=department_id, staff_id=staff_id
     )
-    update_event_permission_check(event, is_support_team, staff_id, department_id)
+    print(event)
+    update_event_permission_check(event, staff_id, department_id)
     display_event(event, department_id=department_id)
     display_update_event_menu(event, department_id=department_id)
     display_all_events_table(department_id=department_id)
