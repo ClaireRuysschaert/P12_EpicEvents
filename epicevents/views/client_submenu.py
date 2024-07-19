@@ -98,8 +98,8 @@ def get_user_by_asking_id(department_id: int) -> Union[EpicUser, None]:
     Otherwise, return None.
     """
     user_id = click.prompt("Please enter the user ID to update", type=int)
-    user = is_client_exists(user_id)
-    return user
+    existing_user = is_client_exists(user_id)
+    return existing_user
 
 
 def display_client(user: EpicUser, department_id: int) -> None:

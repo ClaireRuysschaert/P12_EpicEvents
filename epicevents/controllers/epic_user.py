@@ -51,13 +51,13 @@ def has_client_assign_to_commercial(client_id: int) -> Union[int, None]:
     return None
 
 
-def is_client_exists(user_id: int) -> Union[int, None]:
+def is_client_exists(user_id: int) -> Union[EpicUser, None]:
     """
-    Verifies if the client exists in the database and return the id.
+    Verifies if the client exists in the database and return it.
     If not found, return None.
     """
     _, session = get_session()
     client: EpicUser = EpicUser.get_epic_user_by_id(session, user_id=user_id)
     if client:
-        return client.user_id
+        return client
     return None
